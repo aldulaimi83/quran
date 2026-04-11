@@ -1,0 +1,373 @@
+:root {
+  --bg: #f4efe4;
+  --paper: rgba(255, 252, 245, 0.95);
+  --panel: rgba(255, 250, 240, 0.94);
+  --text: #1f1d18;
+  --muted: #655f55;
+  --line: rgba(78, 61, 34, 0.14);
+  --gold: #ad7c2a;
+  --green: #234638;
+  --green-soft: #dce8dd;
+  --accent: #7b5226;
+  --shadow: 0 24px 80px rgba(45, 34, 16, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Azeret Mono", monospace;
+  color: var(--text);
+  background: linear-gradient(180deg, #efe4cc 0%, var(--bg) 45%, #f8f4ea 100%);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.page-backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top, rgba(173, 124, 42, 0.1), transparent 28%),
+    radial-gradient(circle at 85% 10%, rgba(35, 70, 56, 0.08), transparent 25%);
+}
+
+.hero,
+.app-shell {
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  width: min(1240px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 1rem;
+}
+
+.hero-copy,
+.panel {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.hero-copy {
+  padding: clamp(1.5rem, 3vw, 3rem);
+  border-radius: 36px;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--gold);
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hero-copy h1,
+.panel-heading h2,
+.hero-chip strong,
+.reader-status strong {
+  font-family: "Syne", sans-serif;
+}
+
+.hero-copy h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+}
+
+.hero-text,
+.sidebar-copy,
+.sidebar-note,
+.reader-status span,
+.selected-verse,
+.tafsir-content,
+.field span {
+  color: var(--muted);
+}
+
+.hero-text {
+  margin: 1rem 0 0;
+  max-width: 70ch;
+  line-height: 1.9;
+}
+
+.hero-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.hero-chip {
+  padding: 1rem;
+  border-radius: 22px;
+  border: 1px solid rgba(35, 70, 56, 0.12);
+  background: linear-gradient(180deg, rgba(35, 70, 56, 0.04), rgba(173, 124, 42, 0.05));
+}
+
+.hero-chip strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.hero-chip span {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 0.82rem;
+}
+
+.app-shell {
+  width: min(1240px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0 0 2rem;
+}
+
+.panel {
+  padding: 1.25rem;
+  border-radius: 30px;
+}
+
+.controls-panel {
+  margin-bottom: 1rem;
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.panel-heading h2 {
+  margin: 0;
+  font-size: 1.7rem;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.field select,
+.field input,
+.ghost-button,
+.primary-button {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+}
+
+.field select,
+.field input {
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--text);
+}
+
+.page-input-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.6rem;
+}
+
+.primary-button,
+.ghost-button {
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, var(--gold), #c89a43);
+  color: #fffaf0;
+}
+
+.ghost-button {
+  background: rgba(35, 70, 56, 0.05);
+  color: var(--green);
+}
+
+.primary-button:hover,
+.ghost-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(173, 124, 42, 0.45);
+}
+
+.reader-status {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.layout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+  gap: 1rem;
+}
+
+.mushaf-panel {
+  min-height: 70vh;
+}
+
+.verses {
+  display: grid;
+  gap: 1rem;
+}
+
+.verse-card {
+  padding: 1rem;
+  border-radius: 24px;
+  border: 1px solid rgba(35, 70, 56, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.verse-card:hover,
+.verse-card.is-selected {
+  transform: translateY(-1px);
+  border-color: rgba(173, 124, 42, 0.36);
+  box-shadow: 0 18px 40px rgba(45, 34, 16, 0.08);
+}
+
+.verse-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.verse-arabic {
+  direction: rtl;
+  font-family: "Noto Naskh Arabic", serif;
+  font-size: clamp(1.8rem, 3vw, 2.35rem);
+  line-height: 2.25;
+  text-align: right;
+}
+
+.word {
+  position: relative;
+  display: inline-block;
+  margin-left: 0.22em;
+  padding: 0 0.08em;
+  border-radius: 10px;
+  cursor: help;
+}
+
+.word:hover {
+  background: rgba(173, 124, 42, 0.14);
+}
+
+.verse-translation {
+  margin-top: 0.8rem;
+  line-height: 1.85;
+  color: var(--muted);
+}
+
+.sidebar-stack {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.selected-verse,
+.tafsir-content {
+  line-height: 1.85;
+}
+
+.selected-verse-arabic {
+  direction: rtl;
+  font-family: "Noto Naskh Arabic", serif;
+  font-size: 1.6rem;
+  line-height: 1.9;
+  margin-bottom: 0.8rem;
+  color: var(--green);
+}
+
+.audio-panel audio {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.loading-state,
+.error-state {
+  padding: 1rem;
+  border-radius: 18px;
+  margin-bottom: 1rem;
+}
+
+.loading-state {
+  background: rgba(173, 124, 42, 0.08);
+  color: var(--accent);
+}
+
+.error-state {
+  background: rgba(146, 39, 39, 0.09);
+  color: #7a2525;
+}
+
+.word-tooltip {
+  position: fixed;
+  z-index: 60;
+  max-width: 260px;
+  padding: 0.85rem 0.95rem;
+  border-radius: 16px;
+  border: 1px solid rgba(35, 70, 56, 0.14);
+  background: rgba(27, 35, 31, 0.95);
+  color: #f9f2e5;
+  box-shadow: 0 18px 40px rgba(18, 24, 21, 0.24);
+  pointer-events: none;
+  font-size: 0.8rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 1100px) {
+  .controls-grid,
+  .hero-meta {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .controls-grid,
+  .hero-meta,
+  .page-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .reader-status,
+  .panel-heading {
+    display: grid;
+  }
+
+  .hero-copy,
+  .panel,
+  .verse-card {
+    border-radius: 22px;
+  }
+}

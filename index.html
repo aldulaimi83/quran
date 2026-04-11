@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quran Reader</title>
+  <meta
+    name="description"
+    content="A Quran reading website with Arabic text, page navigation, hover word translation, recitation, and Sunni tafsir."
+  >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Syne:wght@500;700;800&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-backdrop"></div>
+
+  <header class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Quran Reading Experience</p>
+      <h1>Read, listen, understand, and reflect.</h1>
+      <p class="hero-text">
+        Built for focused Quran reading with Arabic text, page navigation, word-by-word hover translation,
+        verse translation, recitation from a Makkah imam by default, and Sunni tafsir.
+      </p>
+      <div class="hero-meta">
+        <article class="hero-chip">
+          <strong>Reading Mode</strong>
+          <span>Mushaf page flow with chapter jump</span>
+        </article>
+        <article class="hero-chip">
+          <strong>Word Help</strong>
+          <span>Hover over Arabic words to see translation</span>
+        </article>
+        <article class="hero-chip">
+          <strong>Tafsir</strong>
+          <span>Sunni tafsir panel with Ibn Kathir preference</span>
+        </article>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="controls-panel panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Controls</p>
+          <h2>Reader Setup</h2>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <label class="field">
+          <span>Surah</span>
+          <select id="chapter-select"></select>
+        </label>
+
+        <label class="field">
+          <span>Page</span>
+          <div class="page-input-row">
+            <button id="prev-page" class="ghost-button" type="button">Prev</button>
+            <input id="page-input" type="number" min="1" max="604" value="1">
+            <button id="next-page" class="ghost-button" type="button">Next</button>
+          </div>
+        </label>
+
+        <label class="field">
+          <span>Translation Language</span>
+          <select id="language-select"></select>
+        </label>
+
+        <label class="field">
+          <span>Reciter</span>
+          <select id="reciter-select"></select>
+        </label>
+      </div>
+
+      <div class="reader-status">
+        <div>
+          <strong id="page-label">Page 1</strong>
+          <span id="chapter-label">Loading chapter data...</span>
+        </div>
+        <div>
+          <strong id="tafsir-label">Sunni tafsir</strong>
+          <span id="tafsir-source-label">Looking for Ibn Kathir...</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="layout-grid">
+      <article class="panel mushaf-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Reading Surface</p>
+            <h2>Arabic Text</h2>
+          </div>
+          <button id="play-selected" class="primary-button" type="button">Play selected verse</button>
+        </div>
+
+        <div id="loading" class="loading-state">Loading Quran content...</div>
+        <div id="error" class="error-state" hidden></div>
+        <div id="verses" class="verses" aria-live="polite"></div>
+      </article>
+
+      <aside class="sidebar-stack">
+        <article class="panel audio-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Recitation</p>
+              <h2>Makkah Imam Default</h2>
+            </div>
+          </div>
+          <p class="sidebar-copy">
+            Default reciter is selected from Makkah imam reciters when available, with automatic fallback if needed.
+          </p>
+          <audio id="audio-player" controls preload="none"></audio>
+          <p id="audio-caption" class="sidebar-note">Select a verse, then press play.</p>
+        </article>
+
+        <article class="panel translation-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Selected Verse</p>
+              <h2>Translation</h2>
+            </div>
+          </div>
+          <div id="selected-verse" class="selected-verse">
+            Click any verse to load its translation and tafsir.
+          </div>
+        </article>
+
+        <article class="panel tafsir-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Tafsir</p>
+              <h2>Sunni Commentary</h2>
+            </div>
+          </div>
+          <div id="tafsir-content" class="tafsir-content">
+            Sunni tafsir will appear here after you select a verse.
+          </div>
+        </article>
+      </aside>
+    </section>
+  </main>
+
+  <div id="word-tooltip" class="word-tooltip" hidden></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
