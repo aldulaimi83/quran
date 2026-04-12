@@ -57,16 +57,16 @@ const state = {
   selectedReciterId: null,
   selectedTafsirId: null,
   verses: [],
-  verseDetailsByKey: {},
-  chapterAudioByKey: {},
-  detailRequestToken: 0,
+  tafsirByVerseKey: {},
+  surahAudioByKey: {},
   playback: {
     mode: "idle",
     queue: [],
     queueIndex: -1,
     activeVerseKey: null,
     activeWordIndex: -1,
-    activeWordTimings: [],
+    wordTimings: [],
+    surahTimestamps: [],
   },
 };
 
@@ -125,13 +125,18 @@ function getChapterForPage(page) {
 
 function getSelectedChapter() {
   if (state.selectedVerseKey) {
-    return state.chapters.find((chapter) => state.selectedVerseKey.startsWith(`${chapter.id}:`));
+    const chapterId = Number(String(state.selectedVerseKey).split(":")[0]);
+    return state.chapters.find((chapter) => chapter.id === chapterId);
   }
-  return getChapterForPage(state.currentPage);
+  return state.chapters.find((chapter) => chapter.id === Number(chapterSelect.value)) || getChapterForPage(state.currentPage);
 }
 
 function getPlayableWords(verse) {
   return (verse?.words || []).filter((word) => word.char_type_name !== "end");
+}
+
+function getVerseByKey(verseKey) {
+  return state.verses.find((verse) => verse.verse_key === verseKey) || null;
 }
 
 function chooseTranslation(languageCode) {
@@ -211,28 +216,29 @@ function fillReciterSelect() {
   }
 }
 
-function renderVerseDetails(verse) {
+function renderVerseDetails(verse, tafsirHtml) {
   const translationText =
-    verse.translations?.[0]?.text || "Translation unavailable for this verse in the selected language.";
-  const tafsirText =
-    verse.tafsirs?.[0]?.text || "Tafsir unavailable for this verse from the selected Sunni source.";
+    verse?.translations?.[0]?.text || "Translation unavailable for this verse in the selected language.";
 
   selectedVerseEl.innerHTML = `
-    <div class="selected-verse-arabic">${escapeHtml(verse.text_uthmani || "")}</div>
-    <div><strong>${escapeHtml(verse.verse_key)}</strong></div>
+    <div class="selected-verse-arabic">${escapeHtml(verse?.text_uthmani || "")}</div>
+    <div><strong>${escapeHtml(verse?.verse_key || "")}</strong></div>
     <div>${translationText}</div>
   `;
 
-  tafsirContentEl.innerHTML = tafsirText;
+  tafsirContentEl.innerHTML =
+    tafsirHtml || "Tafsir unavailable for this verse from the selected Sunni source.";
 }
 
-function renderDetailsLoading(verse) {
-  selectedVerseEl.innerHTML = `
-    <div class="selected-verse-arabic">${escapeHtml(verse.text_uthmani || "")}</div>
-    <div><strong>${escapeHtml(verse.verse_key)}</strong></div>
-    <div>${verse.translations?.[0]?.text || "Loading translation..."}</div>
-  `;
-  tafsirContentEl.textContent = "Loading tafsir...";
+function renderTafsirLoading(verse) {
+  renderVerseDetails(verse, "Loading tafsir...");
+}
+
+function highlightSelectedVerse(verseKey) {
+  state.selectedVerseKey = verseKey;
+  document.querySelectorAll(".verse-card").forEach((card) => {
+    card.classList.toggle("is-selected", card.dataset.verseKey === verseKey);
+  });
 }
 
 function clearActiveWordHighlight() {
@@ -255,16 +261,66 @@ function setActiveWord(verseKey, wordIndex) {
   const activeWord = document.querySelector(`.word[data-verse-key="${verseKey}"][data-word-index="${wordIndex}"]`);
   if (activeWord) {
     activeWord.classList.add("is-playing");
-    activeWord.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 }
 
-function normalizeTimingValue(value, useMilliseconds) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) {
-    return null;
+function buildWordTimingsFromSegments(words, rawSegments) {
+  if (!Array.isArray(rawSegments) || !rawSegments.length || !words.length) {
+    return [];
   }
-  return useMilliseconds ? numeric / 1000 : numeric;
+
+  const timings = [];
+
+  rawSegments.forEach((segment) => {
+    if (!Array.isArray(segment)) {
+      return;
+    }
+
+    const numbers = segment.map(Number);
+    if (numbers.length >= 4) {
+      const fromWord = Math.max(0, numbers[0] - 1);
+      const toWord = Math.min(words.length - 1, numbers[1] - 1);
+      const startMs = numbers[2];
+      const endMs = numbers[3];
+      if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || toWord < fromWord) {
+        return;
+      }
+
+      const coveredWords = toWord - fromWord + 1;
+      const slice = coveredWords > 0 ? (endMs - startMs) / coveredWords : 0;
+      for (let offset = 0; offset < coveredWords; offset += 1) {
+        const wordIndex = fromWord + offset;
+        timings.push({
+          verseKey: null,
+          wordIndex,
+          start: (startMs + slice * offset) / 1000,
+          end: (offset === coveredWords - 1 ? endMs : startMs + slice * (offset + 1)) / 1000,
+        });
+      }
+      return;
+    }
+
+    if (numbers.length >= 3) {
+      const wordIndex = numbers[0] - 1;
+      const startMs = numbers[1];
+      const endMs = numbers[2];
+      if (!Number.isFinite(wordIndex) || !Number.isFinite(startMs) || !Number.isFinite(endMs)) {
+        return;
+      }
+      timings.push({
+        verseKey: null,
+        wordIndex,
+        start: startMs / 1000,
+        end: endMs / 1000,
+      });
+    }
+  });
+
+  return timings.filter((segment) => segment.wordIndex >= 0 && segment.wordIndex < words.length);
+}
+
+function buildVerseWordTimings(verse) {
+  return buildWordTimingsFromSegments(getPlayableWords(verse), verse?.audio?.segments || []);
 }
 
 function buildFallbackWordTimings(verse, durationSeconds) {
@@ -275,208 +331,175 @@ function buildFallbackWordTimings(verse, durationSeconds) {
 
   const slice = durationSeconds / words.length;
   return words.map((word, index) => ({
+    verseKey: verse.verse_key,
     wordIndex: index,
     start: index * slice,
     end: (index + 1) * slice,
   }));
 }
 
-function buildWordTimings(verse) {
-  const words = getPlayableWords(verse);
-  const rawSegments = verse?.audio?.segments || verse?.audio?.timestamps || verse?.segments;
-
-  if (!Array.isArray(rawSegments) || !rawSegments.length || !words.length) {
-    return [];
-  }
-
-  const numericValues = rawSegments
-    .flatMap((segment) => (Array.isArray(segment) ? segment : Object.values(segment || {})))
-    .map(Number)
-    .filter((value) => Number.isFinite(value));
-  const useMilliseconds = numericValues.some((value) => value > 250);
-
-  return rawSegments
-    .map((segment, index) => {
-      if (Array.isArray(segment)) {
-        const start = normalizeTimingValue(segment[0], useMilliseconds);
-        const end = normalizeTimingValue(segment[1], useMilliseconds);
-        const explicitIndex = Number(segment[2]);
-        return {
-          wordIndex:
-            Number.isFinite(explicitIndex) && explicitIndex > 0 && explicitIndex <= words.length
-              ? explicitIndex - 1
-              : index,
-          start,
-          end,
-        };
-      }
-
-      const start = normalizeTimingValue(
-        segment?.start ?? segment?.from ?? segment?.begin ?? segment?.timestamp_from,
-        useMilliseconds
-      );
-      const end = normalizeTimingValue(
-        segment?.end ?? segment?.to ?? segment?.timestamp_to ?? segment?.timestamp_until,
-        useMilliseconds
-      );
-      const explicitIndex = Number(segment?.word_index ?? segment?.position ?? segment?.word);
-      return {
-        wordIndex:
-          Number.isFinite(explicitIndex) && explicitIndex > 0 && explicitIndex <= words.length
-            ? explicitIndex - 1
-            : index,
-        start,
-        end,
-      };
-    })
-    .filter((segment) => Number.isFinite(segment.start) && Number.isFinite(segment.end) && segment.end >= segment.start)
-    .slice(0, words.length);
-}
-
-function syncWordTracking() {
-  const activeVerse =
-    state.verseDetailsByKey[state.playback.activeVerseKey] ||
-    state.verses.find((verse) => verse.verse_key === state.playback.activeVerseKey);
-
-  if (!activeVerse || !audioPlayer.src || audioPlayer.paused) {
+function syncVerseWordTracking() {
+  const verse = getVerseByKey(state.playback.activeVerseKey);
+  if (!verse || !audioPlayer.src || audioPlayer.paused) {
     return;
   }
 
-  let timings = state.playback.activeWordTimings;
+  let timings = state.playback.wordTimings;
   if (!timings.length && Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0) {
-    timings = buildFallbackWordTimings(activeVerse, audioPlayer.duration);
-    state.playback.activeWordTimings = timings;
-  }
-
-  if (!timings.length) {
-    return;
+    timings = buildFallbackWordTimings(verse, audioPlayer.duration);
+    state.playback.wordTimings = timings;
   }
 
   const currentTime = audioPlayer.currentTime;
   const activeSegment = timings.find((segment) => currentTime >= segment.start && currentTime <= segment.end);
-
   if (activeSegment) {
-    setActiveWord(state.playback.activeVerseKey, activeSegment.wordIndex);
+    setActiveWord(verse.verse_key, activeSegment.wordIndex);
   }
 }
 
-function clearPlaybackQueue() {
+function syncSurahWordTracking() {
+  const currentTimeMs = audioPlayer.currentTime * 1000;
+  const verseTimestamp = state.playback.surahTimestamps.find(
+    (item) => currentTimeMs >= item.timestamp_from && currentTimeMs <= item.timestamp_to
+  );
+
+  if (!verseTimestamp) {
+    return;
+  }
+
+  if (state.selectedVerseKey !== verseTimestamp.verse_key) {
+    highlightSelectedVerse(verseTimestamp.verse_key);
+    const verse = getVerseByKey(verseTimestamp.verse_key);
+    if (verse) {
+      renderVerseDetails(verse, state.tafsirByVerseKey[verseTimestamp.verse_key] || "Loading tafsir...");
+      loadTafsirForVerse(verseTimestamp.verse_key, verse);
+    }
+  }
+
+  const words = getPlayableWords(getVerseByKey(verseTimestamp.verse_key));
+  const absoluteTimings = buildWordTimingsFromSegments(words, verseTimestamp.segments || []).map((segment) => ({
+    ...segment,
+    verseKey: verseTimestamp.verse_key,
+  }));
+  const activeSegment = absoluteTimings.find(
+    (segment) => audioPlayer.currentTime >= segment.start && audioPlayer.currentTime <= segment.end
+  );
+
+  if (activeSegment) {
+    setActiveWord(verseTimestamp.verse_key, activeSegment.wordIndex);
+  }
+}
+
+function syncWordTracking() {
+  if (state.playback.mode === "surah") {
+    syncSurahWordTracking();
+    return;
+  }
+  syncVerseWordTracking();
+}
+
+function clearPlaybackState() {
   state.playback.mode = "idle";
   state.playback.queue = [];
   state.playback.queueIndex = -1;
-  state.playback.activeVerseKey = state.selectedVerseKey;
-  state.playback.activeWordTimings = [];
+  state.playback.activeVerseKey = null;
+  state.playback.wordTimings = [];
+  state.playback.surahTimestamps = [];
   clearActiveWordHighlight();
 }
 
-async function playAudio() {
+async function playAudioFromSource(sourceUrl, options = {}) {
+  const { startAt = 0 } = options;
+
+  if (!sourceUrl) {
+    return false;
+  }
+
+  const shouldReload = audioPlayer.src !== sourceUrl;
+  if (shouldReload) {
+    audioPlayer.src = sourceUrl;
+    audioPlayer.load();
+  }
+
+  if (Number.isFinite(startAt) && startAt >= 0) {
+    audioPlayer.currentTime = startAt;
+  }
+
   try {
     await audioPlayer.play();
+    return true;
   } catch (error) {
-    audioCaption.textContent = "Your browser blocked autoplay. Press the audio controls directly.";
+    audioCaption.textContent = "Press play in the audio player to continue playback.";
+    return false;
   }
 }
 
-function applyVerseAudio(verse, shouldAutoplay = false) {
-  const audioUrl = getAudioUrl(verse.audio);
-  state.playback.activeVerseKey = verse.verse_key;
-  state.playback.activeWordTimings = buildWordTimings(verse);
+function prepareVersePlayback(verse, options = {}) {
+  const { autoplay = false } = options;
+  const audioUrl = getAudioUrl(verse?.audio);
+
+  state.playback.activeVerseKey = verse?.verse_key || null;
+  state.playback.wordTimings = buildVerseWordTimings(verse).map((segment) => ({
+    ...segment,
+    verseKey: verse.verse_key,
+  }));
+  state.playback.surahTimestamps = [];
   clearActiveWordHighlight();
 
   if (!audioUrl) {
-    audioPlayer.removeAttribute("src");
-    audioPlayer.load();
-    audioCaption.textContent = `Audio is not available for ${verse.verse_key}`;
+    audioCaption.textContent = `Audio is not available for ${verse?.verse_key || "this ayah"}.`;
     return;
   }
 
-  if (audioPlayer.src !== audioUrl) {
+  audioCaption.textContent = autoplay ? `Playing ${verse.verse_key}` : `Ready to play ${verse.verse_key}`;
+  if (autoplay) {
+    playAudioFromSource(audioUrl, { startAt: 0 });
+  } else if (audioPlayer.src !== audioUrl) {
     audioPlayer.src = audioUrl;
     audioPlayer.load();
   }
-
-  audioCaption.textContent = shouldAutoplay ? `Playing ${verse.verse_key}` : `Ready to play ${verse.verse_key}`;
-
-  if (shouldAutoplay) {
-    playAudio();
-  }
 }
 
-async function loadVerseDetails(verseKey) {
-  if (state.verseDetailsByKey[verseKey]?.tafsirs?.length) {
-    return state.verseDetailsByKey[verseKey];
-  }
-
-  const params = new URLSearchParams({
-    words: "true",
-    language: getApiLanguageCode(state.selectedLanguageCode),
-    translations: String(state.selectedTranslationId),
-    tafsirs: String(state.selectedTafsirId),
-    audio: String(state.selectedReciterId),
-    fields: "text_uthmani,verse_key,page_number",
-    word_fields: "text_uthmani",
-  });
-
-  const result = await fetchJson(`/verses/by_key/${verseKey}?${params.toString()}`);
-  const detailedVerse = result.verse || result;
-  const pageVerse = state.verses.find((verse) => verse.verse_key === verseKey) || {};
-  const mergedVerse = {
-    ...pageVerse,
-    ...detailedVerse,
-    audio: detailedVerse.audio || pageVerse.audio,
-    words: detailedVerse.words || pageVerse.words,
-    translations: detailedVerse.translations || pageVerse.translations,
-    tafsirs: detailedVerse.tafsirs || pageVerse.tafsirs,
-  };
-
-  state.verseDetailsByKey[verseKey] = mergedVerse;
-  return mergedVerse;
-}
-
-async function updateSelection(verseKey, options = {}) {
-  const { autoplay = false, preserveQueue = false } = options;
-  state.selectedVerseKey = verseKey;
-
-  if (!preserveQueue) {
-    clearPlaybackQueue();
-  }
-
-  document.querySelectorAll(".verse-card").forEach((card) => {
-    card.classList.toggle("is-selected", card.dataset.verseKey === verseKey);
-  });
-
-  const pageVerse = state.verses.find((item) => item.verse_key === verseKey);
-  if (!pageVerse) {
+async function loadTafsirForVerse(verseKey, verse) {
+  if (state.tafsirByVerseKey[verseKey]) {
+    renderVerseDetails(verse, state.tafsirByVerseKey[verseKey]);
     return;
   }
 
-  renderDetailsLoading(pageVerse);
-  applyVerseAudio(state.verseDetailsByKey[verseKey] || pageVerse, autoplay);
+  renderTafsirLoading(verse);
 
-  const requestToken = ++state.detailRequestToken;
   try {
-    const detailedVerse = await loadVerseDetails(verseKey);
-    if (requestToken !== state.detailRequestToken || state.selectedVerseKey !== verseKey) {
-      return;
+    const result = await fetchJson(`/tafsirs/${state.selectedTafsirId}/by_ayah/${verseKey}`);
+    const tafsirHtml = result.tafsir?.text || "Tafsir unavailable for this verse from the selected Sunni source.";
+    state.tafsirByVerseKey[verseKey] = tafsirHtml;
+    if (state.selectedVerseKey === verseKey) {
+      renderVerseDetails(verse, tafsirHtml);
     }
-
-    renderVerseDetails(detailedVerse);
-    applyVerseAudio(detailedVerse, autoplay);
   } catch (error) {
-    if (requestToken !== state.detailRequestToken || state.selectedVerseKey !== verseKey) {
-      return;
+    const fallback = "Tafsir could not be loaded right now. Please try another ayah or reload the page.";
+    state.tafsirByVerseKey[verseKey] = fallback;
+    if (state.selectedVerseKey === verseKey) {
+      renderVerseDetails(verse, fallback);
     }
-
-    renderVerseDetails({
-      ...pageVerse,
-      tafsirs: [
-        {
-          text: "Tafsir could not be loaded right now. Please try another ayah or reload the page.",
-        },
-      ],
-    });
-    audioCaption.textContent = autoplay ? `Playing ${verseKey}` : `Ready to play ${verseKey}`;
   }
+}
+
+function selectVerse(verseKey, options = {}) {
+  const { autoplay = false, keepPlaybackMode = false } = options;
+  const verse = getVerseByKey(verseKey);
+  if (!verse) {
+    return;
+  }
+
+  highlightSelectedVerse(verseKey);
+  renderVerseDetails(verse, state.tafsirByVerseKey[verseKey] || "Loading tafsir...");
+  loadTafsirForVerse(verseKey, verse);
+
+  if (!keepPlaybackMode) {
+    clearPlaybackState();
+  }
+
+  prepareVersePlayback(verse, { autoplay });
 }
 
 function renderVerses() {
@@ -514,7 +537,8 @@ function renderVerses() {
 
   document.querySelectorAll(".verse-card").forEach((card) => {
     card.addEventListener("click", () => {
-      updateSelection(card.dataset.verseKey, { autoplay: true });
+      state.playback.mode = "verse";
+      selectVerse(card.dataset.verseKey, { autoplay: true });
     });
   });
 
@@ -537,19 +561,18 @@ function renderVerses() {
   });
 
   if (state.verses[0]) {
-    updateSelection(state.selectedVerseKey || state.verses[0].verse_key);
+    selectVerse(state.selectedVerseKey || state.verses[0].verse_key);
   }
 }
 
 async function loadPage(page) {
   state.currentPage = Math.max(1, Math.min(604, Number(page) || 1));
-  state.verseDetailsByKey = {};
-  state.chapterAudioByKey = {};
+  state.tafsirByVerseKey = {};
   pageInput.value = String(state.currentPage);
   pageLabel.textContent = `Page ${state.currentPage}`;
   setError("");
   setLoading(true, `Loading page ${state.currentPage}...`);
-  clearPlaybackQueue();
+  clearPlaybackState();
 
   try {
     const params = new URLSearchParams({
@@ -578,6 +601,7 @@ async function loadPage(page) {
     }
 
     renderVerses();
+    primeSelectedChapterAudio();
   } catch (error) {
     setError(
       "I could not load Quran content right now. The public API may be unavailable or rate-limiting this request."
@@ -590,18 +614,17 @@ async function loadPage(page) {
   }
 }
 
-async function playSelectedVerse() {
-  if (!state.selectedVerseKey) {
+function playSelectedVerse() {
+  const verse = getVerseByKey(state.selectedVerseKey) || state.verses[0];
+  if (!verse) {
     return;
   }
 
   state.playback.mode = "verse";
-  state.playback.queue = [state.selectedVerseKey];
-  state.playback.queueIndex = 0;
-  await updateSelection(state.selectedVerseKey, { autoplay: true, preserveQueue: true });
+  selectVerse(verse.verse_key, { autoplay: true });
 }
 
-async function playCurrentPageVerseByVerse() {
+function playCurrentPageVerseByVerse() {
   if (!state.verses.length) {
     return;
   }
@@ -615,11 +638,30 @@ async function playCurrentPageVerseByVerse() {
   state.playback.queue = state.verses.slice(startIndex).map((verse) => verse.verse_key);
   state.playback.queueIndex = 0;
 
-  if (state.playback.queue[0]) {
-    await updateSelection(state.playback.queue[0], { autoplay: true, preserveQueue: true });
+  const firstVerseKey = state.playback.queue[0];
+  if (firstVerseKey) {
+    selectVerse(firstVerseKey, { autoplay: true, keepPlaybackMode: true });
   }
 }
 
+async function primeSelectedChapterAudio() {
+  const chapter = getSelectedChapter();
+  if (!chapter || !state.selectedReciterId) {
+    return;
+  }
+
+  const cacheKey = `${state.selectedReciterId}:${chapter.id}`;
+  if (cacheKey in state.surahAudioByKey) {
+    return;
+  }
+
+  try {
+    const result = await fetchJson(`/chapter_recitations/${state.selectedReciterId}/${chapter.id}?segments=true`);
+    state.surahAudioByKey[cacheKey] = result.audio_file || null;
+  } catch (error) {
+    state.surahAudioByKey[cacheKey] = null;
+  }
+}
 async function playFullSurah() {
   const chapter = getSelectedChapter();
   if (!chapter || !state.selectedReciterId) {
@@ -627,16 +669,16 @@ async function playFullSurah() {
     return;
   }
 
-  const cacheKey = `${state.selectedReciterId}:${chapter.id}`;
-  clearPlaybackQueue();
+  clearPlaybackState();
   state.playback.mode = "surah";
 
+  const cacheKey = `${state.selectedReciterId}:${chapter.id}`;
   try {
-    let chapterAudio = state.chapterAudioByKey[cacheKey];
+    let chapterAudio = state.surahAudioByKey[cacheKey];
     if (!chapterAudio) {
-      const result = await fetchJson(`/chapter_recitations/${state.selectedReciterId}/${chapter.id}`);
-      chapterAudio = result.audio_file || result.chapter_recitation || result;
-      state.chapterAudioByKey[cacheKey] = chapterAudio;
+      const result = await fetchJson(`/chapter_recitations/${state.selectedReciterId}/${chapter.id}?segments=true`);
+      chapterAudio = result.audio_file || null;
+      state.surahAudioByKey[cacheKey] = chapterAudio;
     }
 
     const audioUrl = getAudioUrl(chapterAudio);
@@ -644,11 +686,12 @@ async function playFullSurah() {
       throw new Error("No chapter audio returned.");
     }
 
-    clearActiveWordHighlight();
-    audioPlayer.src = audioUrl;
-    audioPlayer.load();
+    state.playback.surahTimestamps = chapterAudio.timestamps || [];
     audioCaption.textContent = `Playing full surah: ${chapter.name_simple}`;
-    await playAudio();
+    if (state.playback.surahTimestamps[0]?.verse_key) {
+      highlightSelectedVerse(state.playback.surahTimestamps[0].verse_key);
+    }
+    await playAudioFromSource(audioUrl, { startAt: 0 });
   } catch (error) {
     state.playback.mode = "idle";
     audioCaption.textContent = "Full surah playback is unavailable for this reciter right now.";
@@ -718,38 +761,25 @@ languageSelect.addEventListener("change", () => {
 
 reciterSelect.addEventListener("change", () => {
   state.selectedReciterId = Number(reciterSelect.value);
+  state.surahAudioByKey = {};
   loadPage(state.currentPage);
 });
 
 prevPageButton.addEventListener("click", () => loadPage(state.currentPage - 1));
 nextPageButton.addEventListener("click", () => loadPage(state.currentPage + 1));
-
-pageInput.addEventListener("change", () => {
-  loadPage(pageInput.value);
-});
-
-playSelectedButton.addEventListener("click", () => {
-  playSelectedVerse();
-});
-
-playPageButton.addEventListener("click", () => {
-  playCurrentPageVerseByVerse();
-});
-
-playSurahButton.addEventListener("click", () => {
-  playFullSurah();
-});
+pageInput.addEventListener("change", () => loadPage(pageInput.value));
+playSelectedButton.addEventListener("click", playSelectedVerse);
+playPageButton.addEventListener("click", playCurrentPageVerseByVerse);
+playSurahButton.addEventListener("click", playFullSurah);
 
 audioPlayer.addEventListener("timeupdate", syncWordTracking);
-audioPlayer.addEventListener("loadedmetadata", syncWordTracking);
-audioPlayer.addEventListener("seeking", syncWordTracking);
 audioPlayer.addEventListener("pause", () => {
-  if (audioPlayer.ended || state.playback.mode === "page") {
+  if (audioPlayer.ended || state.playback.mode === "page" || state.playback.mode === "surah") {
     return;
   }
   clearActiveWordHighlight();
 });
-audioPlayer.addEventListener("ended", async () => {
+audioPlayer.addEventListener("ended", () => {
   clearActiveWordHighlight();
 
   if (state.playback.mode !== "page") {
@@ -759,12 +789,15 @@ audioPlayer.addEventListener("ended", async () => {
   state.playback.queueIndex += 1;
   const nextVerseKey = state.playback.queue[state.playback.queueIndex];
   if (!nextVerseKey) {
-    state.playback.mode = "idle";
+    clearPlaybackState();
     audioCaption.textContent = "Finished page playback.";
     return;
   }
 
-  await updateSelection(nextVerseKey, { autoplay: true, preserveQueue: true });
+  state.playback.mode = "page";
+  selectVerse(nextVerseKey, { autoplay: true, keepPlaybackMode: true });
 });
 
 bootstrap();
+
+
