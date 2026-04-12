@@ -98,7 +98,11 @@
             <p class="eyebrow">Reading Surface</p>
             <h2>Arabic Text</h2>
           </div>
-          <button id="play-selected" class="primary-button" type="button">Play selected verse</button>
+          <div class="playback-actions">
+            <button id="play-selected" class="primary-button" type="button">Play selected ayah</button>
+            <button id="play-page" class="ghost-button" type="button">Play page ayah by ayah</button>
+            <button id="play-surah" class="ghost-button" type="button">Play full surah</button>
+          </div>
         </div>
 
         <div id="loading" class="loading-state">Loading Quran content...</div>
@@ -115,10 +119,10 @@
             </div>
           </div>
           <p class="sidebar-copy">
-            Default reciter is selected from Makkah imam reciters when available, with automatic fallback if needed.
+            Click an ayah once to start recitation immediately, play the page ayah by ayah, or switch to full surah playback.
           </p>
           <audio id="audio-player" controls preload="none"></audio>
-          <p id="audio-caption" class="sidebar-note">Select a verse, then press play.</p>
+          <p id="audio-caption" class="sidebar-note">Click any ayah once to start playback.</p>
         </article>
 
         <article class="panel translation-panel">

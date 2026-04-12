@@ -150,6 +150,13 @@ select {
   margin-bottom: 1rem;
 }
 
+.playback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
 .panel-heading h2 {
   margin: 0;
   font-size: 1.7rem;
@@ -279,6 +286,12 @@ select {
   background: rgba(173, 124, 42, 0.14);
 }
 
+.word.is-playing {
+  background: rgba(35, 70, 56, 0.18);
+  color: var(--green);
+  box-shadow: inset 0 0 0 1px rgba(35, 70, 56, 0.22);
+}
+
 .verse-translation {
   margin-top: 0.8rem;
   line-height: 1.85;
@@ -363,6 +376,10 @@ select {
   .reader-status,
   .panel-heading {
     display: grid;
+  }
+
+  .playback-actions {
+    justify-content: stretch;
   }
 
   .hero-copy,
