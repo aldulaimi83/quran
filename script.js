@@ -149,11 +149,14 @@ function chooseTranslation(languageCode) {
 }
 
 function chooseReciter() {
+  const blockedPatterns = [/mahmoud khalil al-husary/i, /mohamed al-tablawi/i];
   const preferredPatterns = [/muaiq/i, /muaiql/i, /maher/i, /sudais/i, /haram/i, /makk/i];
   return (
-    state.recitations.find((reciter) =>
-      preferredPatterns.some((pattern) => pattern.test(reciter.reciter_name || reciter.style || ""))
-    ) || state.recitations[0]
+    state.recitations.find((reciter) => {
+      const label = `${reciter.reciter_name || ""} ${reciter.style || ""}`;
+      return !blockedPatterns.some((pattern) => pattern.test(label)) &&
+        preferredPatterns.some((pattern) => pattern.test(label));
+    }) || state.recitations[0]
   );
 }
 
@@ -204,7 +207,16 @@ function fillLanguageSelect() {
 }
 
 function fillReciterSelect() {
-  reciterSelect.innerHTML = state.recitations
+  const availableRecitations = state.recitations.filter((reciter) => {
+    const label = `${reciter.reciter_name || ""} ${reciter.style || ""}`;
+    return !/mahmoud khalil al-husary/i.test(label) && !/mohamed al-tablawi/i.test(label);
+  });
+
+  if (!availableRecitations.some((reciter) => reciter.id === state.selectedReciterId)) {
+    state.selectedReciterId = availableRecitations[0]?.id || null;
+  }
+
+  reciterSelect.innerHTML = availableRecitations
     .map(
       (reciter) =>
         `<option value="${reciter.id}">${escapeHtml(reciter.reciter_name || "Unknown reciter")}</option>`
