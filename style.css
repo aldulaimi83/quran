@@ -133,6 +133,33 @@ select {
   padding: 0 0 2rem;
 }
 
+.site-footer {
+  width: min(1240px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0 0 2rem;
+  text-align: center;
+  color: var(--muted);
+  position: relative;
+  z-index: 1;
+}
+
+.site-footer p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.8;
+}
+
+.site-footer a {
+  color: var(--green);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(35, 70, 56, 0.24);
+}
+
+.site-footer a:hover {
+  color: var(--gold);
+  border-bottom-color: rgba(173, 124, 42, 0.45);
+}
+
 .panel {
   padding: 1.25rem;
   border-radius: 30px;
