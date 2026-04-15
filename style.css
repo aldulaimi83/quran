@@ -108,6 +108,17 @@ select {
   border-radius: 36px;
 }
 
+.network-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.network-link:hover {
+  color: var(--green);
+}
+
 .eyebrow {
   margin: 0 0 0.5rem;
   color: var(--gold);
@@ -181,10 +192,14 @@ select {
   width: min(1240px, calc(100% - 2rem));
   margin: 0 auto;
   padding: 0 0 2rem;
-  text-align: center;
   color: var(--muted);
   position: relative;
   z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .site-footer p {
@@ -202,6 +217,18 @@ select {
 .site-footer a:hover {
   color: var(--gold);
   border-bottom-color: rgba(173, 124, 42, 0.45);
+}
+
+.network-links {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.network-label {
+  color: var(--text);
+  font-weight: 700;
 }
 
 .panel {
@@ -457,5 +484,9 @@ select {
   .panel,
   .verse-card {
     border-radius: 22px;
+  }
+
+  .site-footer {
+    align-items: flex-start;
   }
 }
