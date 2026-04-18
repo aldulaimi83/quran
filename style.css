@@ -58,7 +58,9 @@ select {
   z-index: 1;
 }
 
-.seo-intro-card {
+.seo-intro-card,
+.seo-surah-hub,
+.surah-article {
   border: 1px solid var(--line);
   background: rgba(255, 250, 240, 0.88);
   box-shadow: var(--shadow);
@@ -93,6 +95,103 @@ select {
   background: linear-gradient(180deg, rgba(35, 70, 56, 0.04), rgba(173, 124, 42, 0.05));
   color: var(--green);
   font-size: 0.8rem;
+}
+
+.seo-surah-hub {
+  width: min(1240px, calc(100% - 2rem));
+  margin: 0 auto 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.surah-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.surah-link-grid a {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0.9rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(35, 70, 56, 0.1);
+  background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(248,233,195,0.68));
+  color: var(--green);
+  text-decoration: none;
+  font-weight: 800;
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.surah-link-grid a:hover {
+  transform: translateY(-2px);
+  border-color: rgba(173, 124, 42, 0.42);
+}
+
+.surah-page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+
+.back-home {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  color: var(--green);
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.surah-article h1 {
+  margin: 0 0 1rem;
+  font-family: "Syne", sans-serif;
+  font-size: clamp(2.1rem, 6vw, 4rem);
+  line-height: 0.95;
+  color: var(--green);
+}
+
+.surah-article h2 {
+  margin: 1.6rem 0 0.6rem;
+  font-family: "Syne", sans-serif;
+  color: var(--green);
+}
+
+.surah-summary,
+.surah-article p,
+.surah-article li {
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+.surah-article ul {
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.arabic-block {
+  margin: 1.5rem 0;
+  padding: clamp(1.2rem, 4vw, 2rem);
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(35, 70, 56, 0.95), rgba(49, 96, 76, 0.9));
+  color: #fff7e3;
+  font-family: "Noto Naskh Arabic", serif;
+  font-size: clamp(1.7rem, 5vw, 2.8rem);
+  line-height: 2.1;
+  box-shadow: 0 24px 70px rgba(35, 70, 56, 0.18);
+}
+
+.surah-reader-link {
+  display: inline-flex;
+  width: auto;
+  margin-top: 1.4rem;
+  text-decoration: none;
+  border: 0;
 }
 
 .hero-copy,
