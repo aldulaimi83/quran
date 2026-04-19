@@ -1,5 +1,7 @@
 const API_BASE = "https://api.quran.com/api/v4";
 const AUDIO_CDN_BASE = "https://audio.qurancdn.com/";
+
+const JUZ_TO_PAGE = [1,21,41,61,81,101,121,141,161,181,201,221,241,261,281,301,321,341,361,381,401,421,441,461,481,501,521,541,561,581];
 const LANGUAGE_CODES = {
   arabic: "ar",
   bengali: "bn",
@@ -45,6 +47,11 @@ const pageLabel = document.querySelector("#page-label");
 const chapterLabel = document.querySelector("#chapter-label");
 const tafsirLabel = document.querySelector("#tafsir-label");
 const tafsirSourceLabel = document.querySelector("#tafsir-source-label");
+const juzSelect = document.querySelector("#juz-select");
+const darkToggle = document.querySelector("#dark-toggle");
+const fontDecreaseBtn = document.querySelector("#font-decrease");
+const fontIncreaseBtn = document.querySelector("#font-increase");
+const loopToggle = document.querySelector("#loop-toggle");
 
 const state = {
   chapters: [],
@@ -72,6 +79,7 @@ const state = {
     followRequestId: 0,
     requestedVerseKey: null,
     focusedSurahVerseKey: null,
+    loop: false,
   },
 };
 
@@ -142,6 +150,70 @@ function getPlayableWords(verse) {
 
 function getVerseByKey(verseKey) {
   return state.verses.find((verse) => verse.verse_key === verseKey) || null;
+}
+
+function savePrefs() {
+  try {
+    localStorage.setItem("quran_page", String(state.currentPage));
+    localStorage.setItem("quran_lang", state.selectedLanguageCode);
+  } catch (_) {}
+}
+
+function loadPrefs() {
+  try {
+    return {
+      page: Number(localStorage.getItem("quran_page")) || null,
+      lang: localStorage.getItem("quran_lang") || null,
+      dark: localStorage.getItem("quran_dark") === "1",
+      font: Number(localStorage.getItem("quran_font")) || 0,
+    };
+  } catch (_) {
+    return { page: null, lang: null, dark: false, font: 0 };
+  }
+}
+
+function readUrlParams() {
+  const params = new URLSearchParams(location.search);
+  return {
+    page: Number(params.get("page")) || null,
+    verse: params.get("verse") || null,
+  };
+}
+
+function updateUrlParams() {
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set("page", String(state.currentPage));
+    if (state.selectedVerseKey) {
+      url.searchParams.set("verse", state.selectedVerseKey);
+    } else {
+      url.searchParams.delete("verse");
+    }
+    history.replaceState(null, "", url.toString());
+  } catch (_) {}
+}
+
+function applyFontSize(level) {
+  document.documentElement.style.setProperty("--arabic-scale", String(1 + level * 0.15));
+  try { localStorage.setItem("quran_font", String(level)); } catch (_) {}
+}
+
+function changeFontSize(delta) {
+  const current = Number(localStorage.getItem("quran_font") || 0);
+  applyFontSize(Math.max(-2, Math.min(5, current + delta)));
+}
+
+function toggleDark() {
+  const isDark = document.body.classList.toggle("dark");
+  if (darkToggle) darkToggle.textContent = isDark ? "☀️" : "🌙";
+  try { localStorage.setItem("quran_dark", isDark ? "1" : "0"); } catch (_) {}
+}
+
+function fillJuzSelect() {
+  if (!juzSelect) return;
+  juzSelect.innerHTML = JUZ_TO_PAGE
+    .map((page, i) => `<option value="${page}">Juz ${i + 1} — Page ${page}</option>`)
+    .join("");
 }
 
 async function fetchVerseByKey(verseKey) {
@@ -662,20 +734,41 @@ function renderVerses(options = {}) {
   });
 
   document.querySelectorAll(".word").forEach((word) => {
-    word.addEventListener("mouseenter", () => {
+    function showWordTooltip(x, y) {
       const translation = word.dataset.tooltip;
       const transliteration = word.dataset.transliteration;
       tooltip.innerHTML = `<strong>${translation}</strong>${transliteration ? `<br>${transliteration}` : ""}`;
+      tooltip.classList.remove("is-pinned");
+      tooltip.style.left = `${x + 16}px`;
+      tooltip.style.top = `${y + 16}px`;
       tooltip.hidden = false;
-    });
+    }
 
-    word.addEventListener("mousemove", (event) => {
-      tooltip.style.left = `${event.clientX + 16}px`;
-      tooltip.style.top = `${event.clientY + 16}px`;
+    word.addEventListener("mouseenter", (e) => showWordTooltip(e.clientX, e.clientY));
+    word.addEventListener("mousemove", (e) => {
+      if (!tooltip.classList.contains("is-pinned")) {
+        tooltip.style.left = `${e.clientX + 16}px`;
+        tooltip.style.top = `${e.clientY + 16}px`;
+      }
     });
-
     word.addEventListener("mouseleave", () => {
-      tooltip.hidden = true;
+      if (!tooltip.classList.contains("is-pinned")) tooltip.hidden = true;
+    });
+
+    word.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const translation = word.dataset.tooltip;
+      const transliteration = word.dataset.transliteration;
+      tooltip.innerHTML = `<strong>${translation}</strong>${transliteration ? `<br>${transliteration}` : ""}`;
+      tooltip.classList.add("is-pinned");
+      tooltip.style.left = "";
+      tooltip.style.top = "";
+      tooltip.hidden = false;
+    }, { passive: false });
+
+    word.addEventListener("touchend", () => {
+      setTimeout(() => { tooltip.hidden = true; tooltip.classList.remove("is-pinned"); }, 2000);
     });
   });
 
@@ -732,6 +825,13 @@ async function loadPage(page, options = {}) {
     });
     if (!preservePlayback) {
       primeSelectedChapterAudio();
+    }
+    savePrefs();
+    updateUrlParams();
+    if (juzSelect) {
+      const activeJuz = JUZ_TO_PAGE.reduce((best, page, i) =>
+        page <= state.currentPage ? i : best, 0);
+      juzSelect.value = String(JUZ_TO_PAGE[activeJuz]);
     }
   } catch (error) {
     setError(
@@ -832,6 +932,19 @@ async function playFullSurah() {
 async function bootstrap() {
   setLoading(true, "Loading Quran resources...");
 
+  const prefs = loadPrefs();
+  const urlParams = readUrlParams();
+
+  if (prefs.dark) {
+    document.body.classList.add("dark");
+    if (darkToggle) darkToggle.textContent = "☀️";
+  }
+  if (prefs.font) {
+    applyFontSize(prefs.font);
+  }
+
+  fillJuzSelect();
+
   try {
     const [chaptersResult, translationsResult, recitationsResult, tafsirsResult] = await Promise.all([
       fetchJson("/chapters?language=en"),
@@ -845,7 +958,8 @@ async function bootstrap() {
     state.recitations = recitationsResult.recitations || [];
     state.tafsirs = tafsirsResult.tafsirs || [];
 
-    const chosenTranslation = chooseTranslation(state.selectedLanguageCode) || state.translations[0];
+    const savedLang = prefs.lang || "english";
+    const chosenTranslation = chooseTranslation(savedLang) || state.translations[0];
     const chosenReciter = chooseReciter();
     const chosenTafsir = chooseSunniTafsir();
 
@@ -864,7 +978,12 @@ async function bootstrap() {
       audioCaption.textContent = `Default reciter: ${chosenReciter.reciter_name}`;
     }
 
-    await loadPage(1);
+    const startPage = urlParams.page || prefs.page || 1;
+    await loadPage(startPage);
+
+    if (urlParams.verse) {
+      selectVerse(urlParams.verse);
+    }
   } catch (error) {
     setError(
       "This reader could not initialize. The Quran data service may require access that is unavailable in this environment."
@@ -926,6 +1045,14 @@ audioPlayer.addEventListener("pause", () => {
 audioPlayer.addEventListener("ended", () => {
   clearActiveWordHighlight();
 
+  if (state.playback.loop && state.playback.mode === "verse") {
+    const verse = getVerseByKey(state.playback.activeVerseKey);
+    if (verse) {
+      prepareVersePlayback(verse, { autoplay: true });
+      return;
+    }
+  }
+
   if (state.playback.mode !== "page") {
     return;
   }
@@ -941,5 +1068,29 @@ audioPlayer.addEventListener("ended", () => {
   state.playback.mode = "page";
   selectVerse(nextVerseKey, { autoplay: true, keepPlaybackMode: true });
 });
+
+if (juzSelect) {
+  juzSelect.addEventListener("change", () => loadPage(Number(juzSelect.value)));
+}
+
+if (darkToggle) {
+  darkToggle.addEventListener("click", toggleDark);
+}
+
+if (fontDecreaseBtn) {
+  fontDecreaseBtn.addEventListener("click", () => changeFontSize(-1));
+}
+
+if (fontIncreaseBtn) {
+  fontIncreaseBtn.addEventListener("click", () => changeFontSize(1));
+}
+
+if (loopToggle) {
+  loopToggle.addEventListener("click", () => {
+    state.playback.loop = !state.playback.loop;
+    loopToggle.textContent = state.playback.loop ? "Loop on 🔁" : "Loop off";
+    loopToggle.classList.toggle("is-active", state.playback.loop);
+  });
+}
 
 bootstrap();
