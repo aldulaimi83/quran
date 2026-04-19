@@ -26,6 +26,7 @@ const LANGUAGE_CODES = {
 const chapterSelect = document.querySelector("#chapter-select");
 const languageSelect = document.querySelector("#language-select");
 const reciterSelect = document.querySelector("#reciter-select");
+const tafsirLanguageSelect = document.querySelector("#tafsir-language-select");
 const pageInput = document.querySelector("#page-input");
 const prevPageButton = document.querySelector("#prev-page");
 const nextPageButton = document.querySelector("#next-page");
@@ -56,6 +57,7 @@ const state = {
   selectedTranslationId: null,
   selectedReciterId: null,
   selectedTafsirId: null,
+  selectedTafsirLanguage: "english",
   verses: [],
   tafsirByVerseKey: {},
   surahAudioByKey: {},
@@ -177,13 +179,26 @@ function chooseReciter() {
   );
 }
 
-function chooseSunniTafsir() {
-  const preferredPatterns = [/ibn kathir/i, /katheer/i, /saadi/i, /tabari/i];
+function chooseSunniTafsir(language = state.selectedTafsirLanguage) {
+  const normalizedLanguage = language.toLowerCase();
+  const tafsirs = state.tafsirs.filter((tafsir) => tafsir.language_name?.toLowerCase() === normalizedLanguage);
+  const preferredPatterns =
+    normalizedLanguage === "arabic"
+      ? [/muyassar/i, /ميسر/i, /ibn kathir/i, /katheer/i, /ابن كثير/i, /sa'?di/i, /السعدي/i, /tabari/i, /طبري/i]
+      : [/ibn kathir/i, /katheer/i, /saadi/i, /tabari/i];
+
   return (
-    state.tafsirs.find((tafsir) =>
+    tafsirs.find((tafsir) =>
       preferredPatterns.some((pattern) => pattern.test(tafsir.name || tafsir.translated_name?.name || ""))
-    ) || state.tafsirs[0]
+    ) || tafsirs[0] || state.tafsirs[0]
   );
+}
+
+function updateTafsirLabels(tafsir) {
+  const languageLabel = state.selectedTafsirLanguage === "arabic" ? "Arabic tafsir" : "English tafsir";
+  tafsirLabel.textContent = languageLabel;
+  tafsirSourceLabel.textContent = tafsir?.name || tafsir?.translated_name?.name || "Selected tafsir";
+  tafsirContentEl.classList.toggle("is-arabic", state.selectedTafsirLanguage === "arabic");
 }
 
 function fillChapterSelect() {
@@ -245,6 +260,23 @@ function fillReciterSelect() {
   }
 }
 
+function fillTafsirLanguageSelect() {
+  const availableLanguages = new Set(state.tafsirs.map((tafsir) => tafsir.language_name?.toLowerCase()).filter(Boolean));
+  const options = [
+    { value: "english", label: "English tafsir" },
+    { value: "arabic", label: "Arabic tafsir" },
+  ].filter((option) => availableLanguages.has(option.value));
+
+  tafsirLanguageSelect.innerHTML = options
+    .map((option) => `<option value="${option.value}">${option.label}</option>`)
+    .join("");
+
+  if (!options.some((option) => option.value === state.selectedTafsirLanguage)) {
+    state.selectedTafsirLanguage = options[0]?.value || "english";
+  }
+  tafsirLanguageSelect.value = state.selectedTafsirLanguage;
+}
+
 function renderVerseDetails(verse, tafsirHtml) {
   const translationText =
     verse?.translations?.[0]?.text || "Translation unavailable for this verse in the selected language.";
@@ -257,6 +289,7 @@ function renderVerseDetails(verse, tafsirHtml) {
 
   tafsirContentEl.innerHTML =
     tafsirHtml || "Tafsir unavailable for this verse from the selected Sunni source.";
+  tafsirContentEl.classList.toggle("is-arabic", state.selectedTafsirLanguage === "arabic");
 }
 
 function renderTafsirLoading(verse) {
@@ -821,12 +854,11 @@ async function bootstrap() {
     state.selectedReciterId = chosenReciter?.id;
     state.selectedTafsirId = chosenTafsir?.id;
 
-    tafsirLabel.textContent = chosenTafsir?.translated_name?.name || "Sunni tafsir";
-    tafsirSourceLabel.textContent = chosenTafsir?.name || "Selected tafsir";
-
     fillChapterSelect();
     fillLanguageSelect();
     fillReciterSelect();
+    fillTafsirLanguageSelect();
+    updateTafsirLabels(chosenTafsir);
 
     if (chosenReciter) {
       audioCaption.textContent = `Default reciter: ${chosenReciter.reciter_name}`;
@@ -861,6 +893,20 @@ reciterSelect.addEventListener("change", () => {
   state.selectedReciterId = Number(reciterSelect.value);
   state.surahAudioByKey = {};
   loadPage(state.currentPage);
+});
+
+tafsirLanguageSelect.addEventListener("change", () => {
+  state.selectedTafsirLanguage = tafsirLanguageSelect.value;
+  const tafsir = chooseSunniTafsir();
+  state.selectedTafsirId = tafsir?.id;
+  state.tafsirByVerseKey = {};
+  updateTafsirLabels(tafsir);
+
+  const verse = getVerseByKey(state.selectedVerseKey);
+  if (verse) {
+    renderVerseDetails(verse, "Loading tafsir...");
+    loadTafsirForVerse(verse.verse_key, verse);
+  }
 });
 
 prevPageButton.addEventListener("click", () => loadPage(state.currentPage - 1));

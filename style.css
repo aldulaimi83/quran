@@ -506,6 +506,14 @@ select {
   line-height: 1.85;
 }
 
+.tafsir-content.is-arabic {
+  direction: rtl;
+  text-align: right;
+  font-family: "Noto Naskh Arabic", serif;
+  font-size: 1.08rem;
+  line-height: 2.05;
+}
+
 .selected-verse-arabic {
   direction: rtl;
   font-family: "Noto Naskh Arabic", serif;
