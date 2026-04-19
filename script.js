@@ -1,7 +1,13 @@
 const API_BASE = "https://api.quran.com/api/v4";
 const AUDIO_CDN_BASE = "https://audio.qurancdn.com/";
-
-const JUZ_TO_PAGE = [1,21,41,61,81,101,121,141,161,181,201,221,241,261,281,301,321,341,361,381,401,421,441,461,481,501,521,541,561,581];
+const STORAGE_KEY = "quran-youooo-reader-state";
+const MIN_FONT_SCALE = 0.82;
+const MAX_FONT_SCALE = 1.45;
+const JUZ_PAGE_STARTS = [
+  1, 22, 42, 62, 82, 102, 121, 142, 162, 182,
+  201, 222, 242, 262, 282, 302, 322, 342, 362, 382,
+  402, 422, 442, 462, 482, 502, 522, 542, 562, 582,
+];
 const LANGUAGE_CODES = {
   arabic: "ar",
   bengali: "bn",
@@ -29,9 +35,17 @@ const chapterSelect = document.querySelector("#chapter-select");
 const languageSelect = document.querySelector("#language-select");
 const reciterSelect = document.querySelector("#reciter-select");
 const tafsirLanguageSelect = document.querySelector("#tafsir-language-select");
+const juzSelect = document.querySelector("#juz-select");
+const readerSearch = document.querySelector("#reader-search");
+const readerSearchButton = document.querySelector("#reader-search-button");
 const pageInput = document.querySelector("#page-input");
 const prevPageButton = document.querySelector("#prev-page");
 const nextPageButton = document.querySelector("#next-page");
+const fontSmallerButton = document.querySelector("#font-smaller");
+const fontLargerButton = document.querySelector("#font-larger");
+const themeToggleButton = document.querySelector("#theme-toggle");
+const repeatToggleButton = document.querySelector("#repeat-toggle");
+const copyVerseLinkButton = document.querySelector("#copy-verse-link");
 const playSelectedButton = document.querySelector("#play-selected");
 const playPageButton = document.querySelector("#play-page");
 const playSurahButton = document.querySelector("#play-surah");
@@ -47,11 +61,6 @@ const pageLabel = document.querySelector("#page-label");
 const chapterLabel = document.querySelector("#chapter-label");
 const tafsirLabel = document.querySelector("#tafsir-label");
 const tafsirSourceLabel = document.querySelector("#tafsir-source-label");
-const juzSelect = document.querySelector("#juz-select");
-const darkToggle = document.querySelector("#dark-toggle");
-const fontDecreaseBtn = document.querySelector("#font-decrease");
-const fontIncreaseBtn = document.querySelector("#font-increase");
-const loopToggle = document.querySelector("#loop-toggle");
 
 const state = {
   chapters: [],
@@ -68,6 +77,11 @@ const state = {
   verses: [],
   tafsirByVerseKey: {},
   surahAudioByKey: {},
+  settings: {
+    fontScale: 1,
+    theme: "light",
+    repeatVerse: false,
+  },
   playback: {
     mode: "idle",
     queue: [],
@@ -79,9 +93,76 @@ const state = {
     followRequestId: 0,
     requestedVerseKey: null,
     focusedSurahVerseKey: null,
-    loop: false,
   },
 };
+
+function loadSavedState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveReaderState() {
+  const payload = {
+    page: state.currentPage,
+    selectedVerseKey: state.selectedVerseKey,
+    language: state.selectedLanguageCode,
+    reciterId: state.selectedReciterId,
+    tafsirLanguage: state.selectedTafsirLanguage,
+    settings: state.settings,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+}
+
+function getInitialTarget() {
+  const params = new URLSearchParams(window.location.search);
+  const saved = loadSavedState();
+  const surah = Number(params.get("surah") || params.get("chapter"));
+  const ayah = Number(params.get("ayah") || params.get("verse"));
+  const page = Number(params.get("page"));
+
+  if (surah && ayah) {
+    return { verseKey: `${surah}:${ayah}` };
+  }
+
+  if (page) {
+    return { page: Math.max(1, Math.min(604, page)) };
+  }
+
+  if (saved.selectedVerseKey) {
+    return { verseKey: saved.selectedVerseKey };
+  }
+
+  if (saved.page) {
+    return { page: Math.max(1, Math.min(604, Number(saved.page) || 1)) };
+  }
+
+  return { page: 1 };
+}
+
+function applySavedPreferences() {
+  const saved = loadSavedState();
+  if (saved.language) {
+    state.selectedLanguageCode = saved.language;
+  }
+  if (saved.reciterId) {
+    state.selectedReciterId = Number(saved.reciterId);
+  }
+  if (saved.tafsirLanguage) {
+    state.selectedTafsirLanguage = saved.tafsirLanguage;
+  }
+  if (saved.settings) {
+    state.settings = {
+      ...state.settings,
+      ...saved.settings,
+      fontScale: Number(saved.settings.fontScale) || 1,
+      theme: saved.settings.theme === "dark" ? "dark" : "light",
+      repeatVerse: Boolean(saved.settings.repeatVerse),
+    };
+  }
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -152,68 +233,73 @@ function getVerseByKey(verseKey) {
   return state.verses.find((verse) => verse.verse_key === verseKey) || null;
 }
 
-function savePrefs() {
-  try {
-    localStorage.setItem("quran_page", String(state.currentPage));
-    localStorage.setItem("quran_lang", state.selectedLanguageCode);
-  } catch (_) {}
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9: ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function loadPrefs() {
-  try {
-    return {
-      page: Number(localStorage.getItem("quran_page")) || null,
-      lang: localStorage.getItem("quran_lang") || null,
-      dark: localStorage.getItem("quran_dark") === "1",
-      font: Number(localStorage.getItem("quran_font")) || 0,
-    };
-  } catch (_) {
-    return { page: null, lang: null, dark: false, font: 0 };
+function getJuzForPage(page) {
+  const pageNumber = Number(page) || 1;
+  let activeJuz = 1;
+  JUZ_PAGE_STARTS.forEach((startPage, index) => {
+    if (pageNumber >= startPage) {
+      activeJuz = index + 1;
+    }
+  });
+  return activeJuz;
+}
+
+function updateJuzSelect() {
+  if (juzSelect.value !== String(getJuzForPage(state.currentPage))) {
+    juzSelect.value = String(getJuzForPage(state.currentPage));
   }
 }
 
-function readUrlParams() {
-  const params = new URLSearchParams(location.search);
-  return {
-    page: Number(params.get("page")) || null,
-    verse: params.get("verse") || null,
-  };
+function applyReaderSettings(options = {}) {
+  const { persist = true } = options;
+  const fontScale = Math.max(MIN_FONT_SCALE, Math.min(MAX_FONT_SCALE, Number(state.settings.fontScale) || 1));
+  state.settings.fontScale = fontScale;
+  document.documentElement.style.setProperty("--arabic-scale", fontScale.toFixed(2));
+  document.body.dataset.theme = state.settings.theme === "dark" ? "dark" : "light";
+  themeToggleButton.textContent = state.settings.theme === "dark" ? "Day" : "Night";
+  repeatToggleButton.textContent = `Repeat ayah: ${state.settings.repeatVerse ? "on" : "off"}`;
+  repeatToggleButton.setAttribute("aria-pressed", String(state.settings.repeatVerse));
+  if (persist) {
+    saveReaderState();
+  }
 }
 
-function updateUrlParams() {
-  try {
-    const url = new URL(location.href);
-    url.searchParams.set("page", String(state.currentPage));
-    if (state.selectedVerseKey) {
-      url.searchParams.set("verse", state.selectedVerseKey);
-    } else {
-      url.searchParams.delete("verse");
-    }
-    history.replaceState(null, "", url.toString());
-  } catch (_) {}
+function updateVerseUrl(verseKey = state.selectedVerseKey) {
+  if (!verseKey) {
+    return;
+  }
+  const [surah, ayah] = String(verseKey).split(":");
+  if (!surah || !ayah) {
+    return;
+  }
+  const nextUrl = `${window.location.pathname}?surah=${encodeURIComponent(surah)}&ayah=${encodeURIComponent(ayah)}`;
+  window.history.replaceState({}, "", nextUrl);
 }
 
-function applyFontSize(level) {
-  document.documentElement.style.setProperty("--arabic-scale", String(1 + level * 0.15));
-  try { localStorage.setItem("quran_font", String(level)); } catch (_) {}
+function hideTooltip() {
+  tooltip.hidden = true;
 }
 
-function changeFontSize(delta) {
-  const current = Number(localStorage.getItem("quran_font") || 0);
-  applyFontSize(Math.max(-2, Math.min(5, current + delta)));
-}
+function showWordTooltip(word, clientX, clientY) {
+  const translation = word.dataset.tooltip;
+  const transliteration = word.dataset.transliteration;
+  tooltip.innerHTML = `<strong>${translation}</strong>${transliteration ? `<br>${transliteration}` : ""}`;
+  tooltip.hidden = false;
 
-function toggleDark() {
-  const isDark = document.body.classList.toggle("dark");
-  if (darkToggle) darkToggle.textContent = isDark ? "☀️" : "🌙";
-  try { localStorage.setItem("quran_dark", isDark ? "1" : "0"); } catch (_) {}
-}
-
-function fillJuzSelect() {
-  if (!juzSelect) return;
-  juzSelect.innerHTML = JUZ_TO_PAGE
-    .map((page, i) => `<option value="${page}">Juz ${i + 1} — Page ${page}</option>`)
-    .join("");
+  const x = Math.min(window.innerWidth - 280, Math.max(12, clientX + 14));
+  const y = Math.min(window.innerHeight - 110, Math.max(12, clientY + 14));
+  tooltip.style.left = `${x}px`;
+  tooltip.style.top = `${y}px`;
 }
 
 async function fetchVerseByKey(verseKey) {
@@ -304,7 +390,9 @@ function fillLanguageSelect() {
     .map((language) => `<option value="${escapeHtml(language.code)}">${escapeHtml(language.label)}</option>`)
     .join("");
 
-  if (languages.some((language) => language.code === "english")) {
+  if (languages.some((language) => language.code === state.selectedLanguageCode)) {
+    languageSelect.value = state.selectedLanguageCode;
+  } else if (languages.some((language) => language.code === "english")) {
     languageSelect.value = "english";
     state.selectedLanguageCode = "english";
   }
@@ -330,6 +418,15 @@ function fillReciterSelect() {
   if (state.selectedReciterId) {
     reciterSelect.value = String(state.selectedReciterId);
   }
+}
+
+function fillJuzSelect() {
+  juzSelect.innerHTML = JUZ_PAGE_STARTS.map((startPage, index) => {
+    const juzNumber = index + 1;
+    const endPage = JUZ_PAGE_STARTS[index + 1] ? JUZ_PAGE_STARTS[index + 1] - 1 : 604;
+    return `<option value="${juzNumber}">Juz ${juzNumber} - pages ${startPage}-${endPage}</option>`;
+  }).join("");
+  updateJuzSelect();
 }
 
 function fillTafsirLanguageSelect() {
@@ -689,6 +786,9 @@ function selectVerse(verseKey, options = {}) {
   if (!preserveAudioSource) {
     prepareVersePlayback(verse, { autoplay });
   }
+
+  updateVerseUrl(verseKey);
+  saveReaderState();
 }
 
 function renderVerses(options = {}) {
@@ -734,42 +834,37 @@ function renderVerses(options = {}) {
   });
 
   document.querySelectorAll(".word").forEach((word) => {
-    function showWordTooltip(x, y) {
-      const translation = word.dataset.tooltip;
-      const transliteration = word.dataset.transliteration;
-      tooltip.innerHTML = `<strong>${translation}</strong>${transliteration ? `<br>${transliteration}` : ""}`;
-      tooltip.classList.remove("is-pinned");
-      tooltip.style.left = `${x + 16}px`;
-      tooltip.style.top = `${y + 16}px`;
-      tooltip.hidden = false;
-    }
-
-    word.addEventListener("mouseenter", (e) => showWordTooltip(e.clientX, e.clientY));
-    word.addEventListener("mousemove", (e) => {
-      if (!tooltip.classList.contains("is-pinned")) {
-        tooltip.style.left = `${e.clientX + 16}px`;
-        tooltip.style.top = `${e.clientY + 16}px`;
+    word.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const verseKey = word.dataset.verseKey;
+      if (verseKey) {
+        selectVerse(verseKey, { keepPlaybackMode: true, preserveAudioSource: true });
       }
-    });
-    word.addEventListener("mouseleave", () => {
-      if (!tooltip.classList.contains("is-pinned")) tooltip.hidden = true;
+      showWordTooltip(word, event.clientX, event.clientY);
     });
 
-    word.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const translation = word.dataset.tooltip;
-      const transliteration = word.dataset.transliteration;
-      tooltip.innerHTML = `<strong>${translation}</strong>${transliteration ? `<br>${transliteration}` : ""}`;
-      tooltip.classList.add("is-pinned");
-      tooltip.style.left = "";
-      tooltip.style.top = "";
-      tooltip.hidden = false;
-    }, { passive: false });
+    word.addEventListener("touchstart", (event) => {
+      event.stopPropagation();
+      const touch = event.touches[0];
+      if (!touch) {
+        return;
+      }
+      const verseKey = word.dataset.verseKey;
+      if (verseKey) {
+        selectVerse(verseKey, { keepPlaybackMode: true, preserveAudioSource: true });
+      }
+      showWordTooltip(word, touch.clientX, touch.clientY);
+    }, { passive: true });
 
-    word.addEventListener("touchend", () => {
-      setTimeout(() => { tooltip.hidden = true; tooltip.classList.remove("is-pinned"); }, 2000);
+    word.addEventListener("mouseenter", (event) => {
+      showWordTooltip(word, event.clientX, event.clientY);
     });
+
+    word.addEventListener("mousemove", (event) => {
+      showWordTooltip(word, event.clientX, event.clientY);
+    });
+
+    word.addEventListener("mouseleave", hideTooltip);
   });
 
   if (state.verses[0]) {
@@ -817,6 +912,7 @@ async function loadPage(page, options = {}) {
     } else {
       chapterLabel.textContent = "Mixed page";
     }
+    updateJuzSelect();
 
     renderVerses({
       keepPlaybackMode: preservePlayback,
@@ -826,13 +922,7 @@ async function loadPage(page, options = {}) {
     if (!preservePlayback) {
       primeSelectedChapterAudio();
     }
-    savePrefs();
-    updateUrlParams();
-    if (juzSelect) {
-      const activeJuz = JUZ_TO_PAGE.reduce((best, page, i) =>
-        page <= state.currentPage ? i : best, 0);
-      juzSelect.value = String(JUZ_TO_PAGE[activeJuz]);
-    }
+    saveReaderState();
   } catch (error) {
     setError(
       "I could not load Quran content right now. The public API may be unavailable or rate-limiting this request."
@@ -929,21 +1019,61 @@ async function playFullSurah() {
   }
 }
 
+async function goToVerseKey(verseKey) {
+  const verse = await fetchVerseByKey(verseKey);
+  if (!verse?.page_number) {
+    audioCaption.textContent = `Could not find ayah ${verseKey}.`;
+    return;
+  }
+  await loadPage(verse.page_number, { preferredVerseKey: verseKey });
+}
+
+async function runReaderSearch() {
+  const query = normalizeText(readerSearch.value);
+  if (!query) {
+    return;
+  }
+
+  const pageMatch = query.match(/^page\s+(\d+)$/);
+  if (pageMatch) {
+    await loadPage(pageMatch[1]);
+    return;
+  }
+
+  const verseMatch = query.match(/^(\d{1,3})\s*:\s*(\d{1,3})$/);
+  if (verseMatch) {
+    await goToVerseKey(`${Number(verseMatch[1])}:${Number(verseMatch[2])}`);
+    return;
+  }
+
+  const numericPage = Number(query);
+  if (Number.isInteger(numericPage) && numericPage >= 1 && numericPage <= 604) {
+    await loadPage(numericPage);
+    return;
+  }
+
+  const chapter = state.chapters.find((item) => {
+    const names = [
+      item.id,
+      item.name_simple,
+      item.name_complex,
+      item.translated_name?.name,
+      item.name_arabic,
+    ].map(normalizeText);
+    return names.some((name) => name === query || name.includes(query));
+  });
+
+  if (chapter?.pages?.[0]) {
+    chapterSelect.value = String(chapter.id);
+    await loadPage(chapter.pages[0]);
+    return;
+  }
+
+  audioCaption.textContent = "Search by surah name, page number, or ayah like 2:255.";
+}
+
 async function bootstrap() {
   setLoading(true, "Loading Quran resources...");
-
-  const prefs = loadPrefs();
-  const urlParams = readUrlParams();
-
-  if (prefs.dark) {
-    document.body.classList.add("dark");
-    if (darkToggle) darkToggle.textContent = "☀️";
-  }
-  if (prefs.font) {
-    applyFontSize(prefs.font);
-  }
-
-  fillJuzSelect();
 
   try {
     const [chaptersResult, translationsResult, recitationsResult, tafsirsResult] = await Promise.all([
@@ -958,9 +1088,11 @@ async function bootstrap() {
     state.recitations = recitationsResult.recitations || [];
     state.tafsirs = tafsirsResult.tafsirs || [];
 
-    const savedLang = prefs.lang || "english";
-    const chosenTranslation = chooseTranslation(savedLang) || state.translations[0];
-    const chosenReciter = chooseReciter();
+    applySavedPreferences();
+
+    const chosenTranslation = chooseTranslation(state.selectedLanguageCode) || state.translations[0];
+    const savedReciter = state.recitations.find((reciter) => reciter.id === state.selectedReciterId);
+    const chosenReciter = savedReciter || chooseReciter();
     const chosenTafsir = chooseSunniTafsir();
 
     state.selectedTranslationId = chosenTranslation?.id;
@@ -972,17 +1104,20 @@ async function bootstrap() {
     fillLanguageSelect();
     fillReciterSelect();
     fillTafsirLanguageSelect();
+    fillJuzSelect();
     updateTafsirLabels(chosenTafsir);
+    applyReaderSettings({ persist: false });
 
     if (chosenReciter) {
       audioCaption.textContent = `Default reciter: ${chosenReciter.reciter_name}`;
     }
 
-    const startPage = urlParams.page || prefs.page || 1;
-    await loadPage(startPage);
-
-    if (urlParams.verse) {
-      selectVerse(urlParams.verse);
+    const initialTarget = getInitialTarget();
+    if (initialTarget.verseKey) {
+      const verse = await fetchVerseByKey(initialTarget.verseKey);
+      await loadPage(verse?.page_number || 1, { preferredVerseKey: initialTarget.verseKey });
+    } else {
+      await loadPage(initialTarget.page || 1);
     }
   } catch (error) {
     setError(
@@ -996,6 +1131,22 @@ chapterSelect.addEventListener("change", () => {
   const chapter = state.chapters.find((item) => item.id === Number(chapterSelect.value));
   if (chapter?.pages?.[0]) {
     loadPage(chapter.pages[0]);
+  }
+});
+
+juzSelect.addEventListener("change", () => {
+  const juzNumber = Number(juzSelect.value);
+  const startPage = JUZ_PAGE_STARTS[juzNumber - 1];
+  if (startPage) {
+    loadPage(startPage);
+  }
+});
+
+readerSearchButton.addEventListener("click", runReaderSearch);
+readerSearch.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    runReaderSearch();
   }
 });
 
@@ -1031,9 +1182,43 @@ tafsirLanguageSelect.addEventListener("change", () => {
 prevPageButton.addEventListener("click", () => loadPage(state.currentPage - 1));
 nextPageButton.addEventListener("click", () => loadPage(state.currentPage + 1));
 pageInput.addEventListener("change", () => loadPage(pageInput.value));
+fontSmallerButton.addEventListener("click", () => {
+  state.settings.fontScale -= 0.08;
+  applyReaderSettings();
+});
+fontLargerButton.addEventListener("click", () => {
+  state.settings.fontScale += 0.08;
+  applyReaderSettings();
+});
+themeToggleButton.addEventListener("click", () => {
+  state.settings.theme = state.settings.theme === "dark" ? "light" : "dark";
+  applyReaderSettings();
+});
+repeatToggleButton.addEventListener("click", () => {
+  state.settings.repeatVerse = !state.settings.repeatVerse;
+  applyReaderSettings();
+});
+copyVerseLinkButton.addEventListener("click", async () => {
+  updateVerseUrl();
+  const link = window.location.href;
+  try {
+    await navigator.clipboard.writeText(link);
+    copyVerseLinkButton.textContent = "Copied";
+  } catch (error) {
+    copyVerseLinkButton.textContent = "Link ready in address bar";
+  }
+  setTimeout(() => {
+    copyVerseLinkButton.textContent = "Copy selected verse link";
+  }, 1800);
+});
 playSelectedButton.addEventListener("click", playSelectedVerse);
 playPageButton.addEventListener("click", playCurrentPageVerseByVerse);
 playSurahButton.addEventListener("click", playFullSurah);
+document.addEventListener("click", (event) => {
+  if (!event.target.closest(".word")) {
+    hideTooltip();
+  }
+});
 
 audioPlayer.addEventListener("timeupdate", syncWordTracking);
 audioPlayer.addEventListener("pause", () => {
@@ -1045,12 +1230,11 @@ audioPlayer.addEventListener("pause", () => {
 audioPlayer.addEventListener("ended", () => {
   clearActiveWordHighlight();
 
-  if (state.playback.loop && state.playback.mode === "verse") {
-    const verse = getVerseByKey(state.playback.activeVerseKey);
-    if (verse) {
-      prepareVersePlayback(verse, { autoplay: true });
-      return;
-    }
+  if (state.settings.repeatVerse && state.playback.mode === "verse" && state.playback.activeVerseKey) {
+    const verseKey = state.playback.activeVerseKey;
+    state.playback.mode = "verse";
+    selectVerse(verseKey, { autoplay: true, keepPlaybackMode: true });
+    return;
   }
 
   if (state.playback.mode !== "page") {
@@ -1068,29 +1252,5 @@ audioPlayer.addEventListener("ended", () => {
   state.playback.mode = "page";
   selectVerse(nextVerseKey, { autoplay: true, keepPlaybackMode: true });
 });
-
-if (juzSelect) {
-  juzSelect.addEventListener("change", () => loadPage(Number(juzSelect.value)));
-}
-
-if (darkToggle) {
-  darkToggle.addEventListener("click", toggleDark);
-}
-
-if (fontDecreaseBtn) {
-  fontDecreaseBtn.addEventListener("click", () => changeFontSize(-1));
-}
-
-if (fontIncreaseBtn) {
-  fontIncreaseBtn.addEventListener("click", () => changeFontSize(1));
-}
-
-if (loopToggle) {
-  loopToggle.addEventListener("click", () => {
-    state.playback.loop = !state.playback.loop;
-    loopToggle.textContent = state.playback.loop ? "Loop on 🔁" : "Loop off";
-    loopToggle.classList.toggle("is-active", state.playback.loop);
-  });
-}
 
 bootstrap();
