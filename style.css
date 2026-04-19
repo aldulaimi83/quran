@@ -10,6 +10,7 @@
   --green-soft: #dce8dd;
   --accent: #7b5226;
   --shadow: 0 24px 80px rgba(45, 34, 16, 0.12);
+  --arabic-scale: 1;
 }
 
 * {
@@ -22,6 +23,21 @@ body {
   font-family: "Azeret Mono", monospace;
   color: var(--text);
   background: linear-gradient(180deg, #efe4cc 0%, var(--bg) 45%, #f8f4ea 100%);
+}
+
+body[data-theme="dark"] {
+  --bg: #101612;
+  --paper: rgba(22, 30, 25, 0.96);
+  --panel: rgba(20, 29, 24, 0.94);
+  --text: #f3ead8;
+  --muted: #c8bda8;
+  --line: rgba(243, 234, 216, 0.13);
+  --gold: #e0b45d;
+  --green: #b7dfc8;
+  --green-soft: #25352d;
+  --accent: #d7a95d;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  background: linear-gradient(180deg, #0c120f 0%, #101612 48%, #15120d 100%);
 }
 
 button,
@@ -386,10 +402,55 @@ select {
   color: var(--text);
 }
 
+body[data-theme="dark"] .field select,
+body[data-theme="dark"] .field input {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+body[data-theme="dark"] .field select option {
+  background: #152019;
+  color: #f3ead8;
+}
+
 .page-input-row {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 0.6rem;
+}
+
+.search-row,
+.reader-option-row {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.search-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.reader-option-row {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.compact-button {
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+}
+
+.inline-link-button {
+  border: 0;
+  padding: 0;
+  color: var(--green);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+}
+
+.inline-link-button:hover {
+  color: var(--gold);
 }
 
 .primary-button,
@@ -465,7 +526,7 @@ select {
 .verse-arabic {
   direction: rtl;
   font-family: "Noto Naskh Arabic", serif;
-  font-size: clamp(1.8rem, 3vw, 2.35rem);
+  font-size: calc(clamp(1.8rem, 3vw, 2.35rem) * var(--arabic-scale));
   line-height: 2.25;
   text-align: right;
 }
@@ -481,6 +542,12 @@ select {
 
 .word:hover {
   background: rgba(173, 124, 42, 0.14);
+}
+
+.word:focus,
+.word:active {
+  outline: none;
+  background: rgba(173, 124, 42, 0.18);
 }
 
 .word.is-playing {
@@ -517,7 +584,7 @@ select {
 .selected-verse-arabic {
   direction: rtl;
   font-family: "Noto Naskh Arabic", serif;
-  font-size: 1.6rem;
+  font-size: calc(1.6rem * var(--arabic-scale));
   line-height: 1.9;
   margin-bottom: 0.8rem;
   color: var(--green);
@@ -560,6 +627,19 @@ select {
   line-height: 1.7;
 }
 
+body[data-theme="dark"] .seo-intro-card,
+body[data-theme="dark"] .seo-surah-hub,
+body[data-theme="dark"] .surah-article,
+body[data-theme="dark"] .hero-copy,
+body[data-theme="dark"] .panel {
+  background: var(--panel);
+}
+
+body[data-theme="dark"] .verse-card,
+body[data-theme="dark"] .surah-link-grid a {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 @media (max-width: 1100px) {
   .controls-grid,
   .hero-meta {
@@ -574,7 +654,9 @@ select {
 @media (max-width: 700px) {
   .controls-grid,
   .hero-meta,
-  .page-input-row {
+  .page-input-row,
+  .search-row,
+  .reader-option-row {
     grid-template-columns: 1fr;
   }
 
@@ -595,5 +677,13 @@ select {
 
   .site-footer {
     align-items: flex-start;
+  }
+
+  .word-tooltip {
+    left: 1rem !important;
+    right: 1rem;
+    top: auto !important;
+    bottom: 1rem;
+    max-width: none;
   }
 }
