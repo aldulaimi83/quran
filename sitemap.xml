@@ -2,68 +2,110 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://quran.youooo.com/</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://quran.youooo.com/surahs/al-fatiha.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://quran.youooo.com/surahs/al-ikhlas.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://quran.youooo.com/surahs/al-falaq.html</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://quran.youooo.com/surahs/al-falaq.html</loc>
-    <lastmod>2026-04-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://quran.youooo.com/surahs/an-nas.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://quran.youooo.com/surahs/al-asr.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://quran.youooo.com/surahs/al-kawthar.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://quran.youooo.com/surahs/al-kafirun.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://quran.youooo.com/surahs/an-nasr.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://quran.youooo.com/surahs/al-quraysh.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://quran.youooo.com/surahs/al-maun.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://quran.youooo.com/surahs/short-surahs-for-prayer-with-meaning.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://quran.youooo.com/surahs/easiest-surahs-to-memorize.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://quran.youooo.com/surahs/yaseen-meaning-and-explanation.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://quran.youooo.com/surahs/ar-rahman-full-tafsir-english.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://quran.youooo.com/surahs/al-mulk-benefits-and-meaning.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://quran.youooo.com/surahs/al-baqarah-summary.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://quran.youooo.com/surahs/top-10-short-surahs-for-prayer.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

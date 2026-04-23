@@ -210,6 +210,56 @@ select {
   border: 0;
 }
 
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+  margin-top: 1.25rem;
+}
+
+.guide-card {
+  display: block;
+  padding: 1rem 1.05rem;
+  border-radius: 20px;
+  border: 1px solid rgba(35, 70, 56, 0.12);
+  background: linear-gradient(135deg, rgba(255,255,255,0.94), rgba(248,233,195,0.62));
+  color: var(--green);
+  text-decoration: none;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.guide-card:hover {
+  border-color: rgba(173, 124, 42, 0.42);
+  transform: translateY(-2px);
+}
+
+.surah-related {
+  margin-top: 1.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.surah-related h2,
+.surah-related h3 {
+  margin-bottom: 0.7rem;
+}
+
+.surah-related ul {
+  padding-left: 1.25rem;
+}
+
+.surah-related a {
+  color: var(--green);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(35, 70, 56, 0.18);
+}
+
+.surah-related a:hover {
+  color: var(--gold);
+  border-bottom-color: rgba(173, 124, 42, 0.45);
+}
+
 .hero-copy,
 .panel {
   border: 1px solid var(--line);
