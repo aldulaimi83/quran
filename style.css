@@ -25,6 +25,29 @@ body {
   background: linear-gradient(180deg, #efe4cc 0%, var(--bg) 45%, #f8f4ea 100%);
 }
 
+body[data-ui-language="arabic"] {
+  font-family: "Noto Naskh Arabic", "Azeret Mono", monospace;
+}
+
+body[data-ui-language="arabic"] .hero-copy,
+body[data-ui-language="arabic"] .seo-intro-card,
+body[data-ui-language="arabic"] .controls-panel,
+body[data-ui-language="arabic"] .sidebar-stack,
+body[data-ui-language="arabic"] .site-footer {
+  text-align: right;
+}
+
+body[data-ui-language="arabic"] .controls-grid,
+body[data-ui-language="arabic"] .reader-status,
+body[data-ui-language="arabic"] .playback-actions,
+body[data-ui-language="arabic"] .hero-meta,
+body[data-ui-language="arabic"] .network-links,
+body[data-ui-language="arabic"] .page-input-row,
+body[data-ui-language="arabic"] .search-row,
+body[data-ui-language="arabic"] .reader-option-row {
+  direction: rtl;
+}
+
 body[data-theme="dark"] {
   --bg: #101612;
   --paper: rgba(22, 30, 25, 0.96);

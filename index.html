@@ -71,25 +71,25 @@
 
   <header class="hero">
     <div class="hero-copy">
-      <a class="network-link" href="https://youooo.com" target="_blank" rel="noopener">More from YouOOO</a>
-      <p class="eyebrow">Quran Reading Experience</p>
-      <h1>Read Quran Online with Translation, Tafsir, Audio & Word-by-Word Learning</h1>
-      <p class="hero-text">
+      <a class="network-link" href="https://youooo.com" target="_blank" rel="noopener" data-i18n="networkLink">More from YouOOO</a>
+      <p class="eyebrow" data-i18n="heroEyebrow">Quran Reading Experience</p>
+      <h1 data-i18n="heroTitle">Read Quran Online with Translation, Tafsir, Audio & Word-by-Word Learning</h1>
+      <p class="hero-text" data-i18n="heroText">
         Free Quran reader for non-Arabic speakers. Read, listen, and understand the Quran with multiple languages,
         tafsir, audio recitation, and word-by-word translation.
       </p>
       <div class="hero-meta">
         <article class="hero-chip">
-          <strong>Reading Mode</strong>
-          <span>Mushaf page flow with chapter jump</span>
+          <strong data-i18n="heroChipReadingTitle">Reading Mode</strong>
+          <span data-i18n="heroChipReadingText">Mushaf page flow with chapter jump</span>
         </article>
         <article class="hero-chip">
-          <strong>Word Help</strong>
-          <span>Tap or hover Arabic words to see translation</span>
+          <strong data-i18n="heroChipWordTitle">Word Help</strong>
+          <span data-i18n="heroChipWordText">Tap or hover Arabic words to see translation</span>
         </article>
         <article class="hero-chip">
-          <strong>Tafsir</strong>
-          <span>English or Arabic Sunni tafsir panel</span>
+          <strong data-i18n="heroChipTafsirTitle">Tafsir</strong>
+          <span data-i18n="heroChipTafsirText">English or Arabic Sunni tafsir panel</span>
         </article>
       </div>
     </div>
@@ -97,26 +97,26 @@
 
   <section class="seo-intro">
     <div class="seo-intro-card">
-      <p class="eyebrow">Understand The Quran</p>
-      <h2>Read Quran online with translation, tafsir, audio, and word-by-word help.</h2>
-      <p>
+      <p class="eyebrow" data-i18n="introEyebrow">Understand The Quran</p>
+      <h2 data-i18n="introTitle">Read Quran online with translation, tafsir, audio, and word-by-word help.</h2>
+      <p data-i18n="introBody1">
         Quran YouOOO is built for people who want to read the Quran online with Arabic text, translation,
         word-by-word meaning, recitation, and Sunni tafsir in one simple place.
       </p>
-      <p>
+      <p data-i18n="introBody2">
         It is especially helpful for non-Arabic speakers, new Muslims, reverts, children growing up abroad,
         and anyone who wants to learn Quranic Arabic while reading the Quran.
       </p>
-      <p>
+      <p data-i18n="introBody3">
         Use this Quran reader to listen to recitation, move through Mushaf pages, choose translation languages,
         and study selected verses with tafsir notes. The goal is to make Quran study easier for people who want
         to read, listen, understand, and reflect without switching between many different tools.
       </p>
       <div class="seo-link-row" aria-label="Helpful reading topics">
-        <span>Read Quran online</span>
-        <span>Word-by-word Quran</span>
-        <span>Quran translation and tafsir</span>
-        <span>Listen to Quran recitation</span>
+        <span data-i18n="introTag1">Read Quran online</span>
+        <span data-i18n="introTag2">Word-by-word Quran</span>
+        <span data-i18n="introTag3">Quran translation and tafsir</span>
+        <span data-i18n="introTag4">Listen to Quran recitation</span>
       </div>
     </div>
   </section>
@@ -279,84 +279,92 @@
     <section class="controls-panel panel">
       <div class="panel-heading">
         <div>
-          <p class="eyebrow">Controls</p>
-          <h2>Reader Setup</h2>
+          <p class="eyebrow" data-i18n="controlsEyebrow">Controls</p>
+          <h2 data-i18n="readerSetup">Reader Setup</h2>
         </div>
       </div>
 
       <div class="controls-grid">
         <label class="field">
-          <span>Surah</span>
-          <select id="chapter-select"></select>
-        </label>
-
-        <label class="field">
-          <span>Page</span>
-          <div class="page-input-row">
-            <button id="prev-page" class="ghost-button" type="button">Prev</button>
-            <input id="page-input" type="number" min="1" max="604" value="1">
-            <button id="next-page" class="ghost-button" type="button">Next</button>
-          </div>
-        </label>
-
-        <label class="field">
-          <span>Translation Language</span>
-          <select id="language-select"></select>
-        </label>
-
-        <label class="field">
-          <span>Reciter</span>
-          <select id="reciter-select"></select>
-        </label>
-
-        <label class="field">
-          <span>Tafsir Language</span>
-          <select id="tafsir-language-select">
-            <option value="english">English tafsir</option>
-            <option value="arabic">Arabic tafsir</option>
+          <span data-i18n="interfaceLanguage">Interface Language</span>
+          <select id="ui-language-select">
+            <option value="english">English</option>
+            <option value="arabic">العربية</option>
           </select>
         </label>
 
         <label class="field">
-          <span>Juz</span>
+          <span data-i18n="surahLabel">Surah</span>
+          <select id="chapter-select"></select>
+        </label>
+
+        <label class="field">
+          <span data-i18n="pageField">Page</span>
+          <div class="page-input-row">
+            <button id="prev-page" class="ghost-button" type="button" data-i18n="prev">Prev</button>
+            <input id="page-input" type="number" min="1" max="604" value="1">
+            <button id="next-page" class="ghost-button" type="button" data-i18n="next">Next</button>
+          </div>
+        </label>
+
+        <label class="field">
+          <span data-i18n="translationLanguage">Translation Language</span>
+          <select id="language-select"></select>
+        </label>
+
+        <label class="field">
+          <span data-i18n="reciterLabel">Reciter</span>
+          <select id="reciter-select"></select>
+        </label>
+
+        <label class="field">
+          <span data-i18n="tafsirLanguage">Tafsir Language</span>
+          <select id="tafsir-language-select">
+            <option value="english" data-i18n="englishTafsir">English tafsir</option>
+            <option value="arabic" data-i18n="arabicTafsir">Arabic tafsir</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span data-i18n="juzLabel">Juz</span>
           <select id="juz-select"></select>
         </label>
 
         <label class="field">
-          <span>Search Surah / Ayah</span>
+          <span data-i18n="searchLabel">Search Surah / Ayah</span>
           <div class="search-row">
-            <input id="reader-search" type="search" placeholder="Al-Fatiha, 2:255, page 10">
-            <button id="reader-search-button" class="ghost-button" type="button">Go</button>
+            <input id="reader-search" type="search" placeholder="Al-Fatiha, 2:255, page 10" data-i18n-placeholder="searchPlaceholder">
+            <button id="reader-search-button" class="ghost-button" type="button" data-i18n="go">Go</button>
           </div>
         </label>
 
         <label class="field">
-          <span>Reading Options</span>
+          <span data-i18n="readingOptions">Reading Options</span>
           <div class="reader-option-row">
             <button id="font-smaller" class="ghost-button compact-button" type="button">A-</button>
             <button id="font-larger" class="ghost-button compact-button" type="button">A+</button>
-            <button id="theme-toggle" class="ghost-button compact-button" type="button">Night</button>
+            <button id="theme-toggle" class="ghost-button compact-button" type="button" data-i18n="night">Night</button>
           </div>
         </label>
 
         <label class="field">
-          <span>Memorization</span>
-          <button id="repeat-toggle" class="ghost-button" type="button" aria-pressed="false">Repeat ayah: off</button>
+          <span data-i18n="memorization">Memorization</span>
+          <button id="repeat-toggle" class="ghost-button" type="button" aria-pressed="false" data-i18n="repeatAyahOff">Repeat ayah: off</button>
         </label>
       </div>
 
       <div class="reader-status">
         <div>
           <strong id="page-label">Page 1</strong>
-          <span id="chapter-label">Loading chapter data...</span>
+          <span id="chapter-label" data-i18n="loadingChapterData">Loading chapter data...</span>
         </div>
         <div>
-          <strong id="tafsir-label">Sunni tafsir</strong>
-          <span id="tafsir-source-label">Looking for Ibn Kathir...</span>
+          <strong id="tafsir-label" data-i18n="sunniTafsir">Sunni tafsir</strong>
+          <span id="tafsir-source-label" data-i18n="lookingForIbnKathir">Looking for Ibn Kathir...</span>
         </div>
         <div>
-          <strong>Share</strong>
-          <button id="copy-verse-link" class="inline-link-button" type="button">Copy selected verse link</button>
+          <strong data-i18n="shareLabel">Share</strong>
+          <button id="copy-verse-link" class="inline-link-button" type="button" data-i18n="copySelectedVerseLink">Copy selected verse link</button>
         </div>
       </div>
     </section>
@@ -365,17 +373,17 @@
       <article class="panel mushaf-panel">
         <div class="panel-heading">
           <div>
-            <p class="eyebrow">Reading Surface</p>
-            <h2>Arabic Text</h2>
+            <p class="eyebrow" data-i18n="readingSurface">Reading Surface</p>
+            <h2 data-i18n="arabicText">Arabic Text</h2>
           </div>
           <div class="playback-actions">
-            <button id="play-selected" class="primary-button" type="button">Play selected ayah</button>
-            <button id="play-page" class="ghost-button" type="button">Play page ayah by ayah</button>
-            <button id="play-surah" class="ghost-button" type="button">Play full surah</button>
+            <button id="play-selected" class="primary-button" type="button" data-i18n="playSelectedAyah">Play selected ayah</button>
+            <button id="play-page" class="ghost-button" type="button" data-i18n="playPageAyahByAyah">Play page ayah by ayah</button>
+            <button id="play-surah" class="ghost-button" type="button" data-i18n="playFullSurah">Play full surah</button>
           </div>
         </div>
 
-        <div id="loading" class="loading-state">Loading Quran content...</div>
+        <div id="loading" class="loading-state" data-i18n="loadingQuranContent">Loading Quran content...</div>
         <div id="error" class="error-state" hidden></div>
         <div id="verses" class="verses" aria-live="polite"></div>
       </article>
@@ -384,25 +392,25 @@
         <article class="panel audio-panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Recitation</p>
-              <h2>Makkah Imam Default</h2>
+              <p class="eyebrow" data-i18n="recitationEyebrow">Recitation</p>
+              <h2 data-i18n="makkahImamDefault">Makkah Imam Default</h2>
             </div>
           </div>
-          <p class="sidebar-copy">
+          <p class="sidebar-copy" data-i18n="audioPanelCopy">
             Click an ayah once to start recitation immediately, play the page ayah by ayah, or switch to full surah playback.
           </p>
           <audio id="audio-player" controls preload="none"></audio>
-          <p id="audio-caption" class="sidebar-note">Click any ayah once to start playback.</p>
+          <p id="audio-caption" class="sidebar-note" data-i18n="audioCaptionStart">Click any ayah once to start playback.</p>
         </article>
 
         <article class="panel translation-panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Selected Verse</p>
-              <h2>Translation</h2>
+              <p class="eyebrow" data-i18n="selectedVerseEyebrow">Selected Verse</p>
+              <h2 data-i18n="translationHeading">Translation</h2>
             </div>
           </div>
-          <div id="selected-verse" class="selected-verse">
+          <div id="selected-verse" class="selected-verse" data-i18n="selectedVerseEmpty">
             Click any verse to load its translation and tafsir.
           </div>
         </article>
@@ -410,11 +418,11 @@
         <article class="panel tafsir-panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">Tafsir</p>
-              <h2>Sunni Commentary</h2>
+              <p class="eyebrow" data-i18n="tafsirEyebrow">Tafsir</p>
+              <h2 data-i18n="sunniCommentary">Sunni Commentary</h2>
             </div>
           </div>
-          <div id="tafsir-content" class="tafsir-content">
+          <div id="tafsir-content" class="tafsir-content" data-i18n="tafsirEmpty">
             English or Arabic tafsir will appear here after you select a verse.
           </div>
         </article>
@@ -424,11 +432,11 @@
 
   <footer class="site-footer">
     <p>
-      Built with care by Ahmed Aldulaimi.
-      <a href="https://www.linkedin.com/in/ahmedaldulaimi" target="_blank" rel="noreferrer">Connect on LinkedIn</a>
+      <span data-i18n="footerBuiltBy">Built with care by Ahmed Aldulaimi.</span>
+      <a href="https://www.linkedin.com/in/ahmedaldulaimi" target="_blank" rel="noreferrer" data-i18n="footerLinkedIn">Connect on LinkedIn</a>
     </p>
     <div class="network-links">
-      <span class="network-label">YouOOO Network</span>
+      <span class="network-label" data-i18n="footerNetwork">YouOOO Network</span>
       <a href="https://quran.youooo.com" target="_blank" rel="noopener">Quran</a>
       <a href="https://resume.youooo.com" target="_blank" rel="noopener">Resume</a>
       <a href="https://game.youooo.com" target="_blank" rel="noopener">Games</a>

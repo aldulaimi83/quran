@@ -32,6 +32,7 @@ const LANGUAGE_CODES = {
 };
 
 const chapterSelect = document.querySelector("#chapter-select");
+const uiLanguageSelect = document.querySelector("#ui-language-select");
 const languageSelect = document.querySelector("#language-select");
 const reciterSelect = document.querySelector("#reciter-select");
 const tafsirLanguageSelect = document.querySelector("#tafsir-language-select");
@@ -62,6 +63,227 @@ const chapterLabel = document.querySelector("#chapter-label");
 const tafsirLabel = document.querySelector("#tafsir-label");
 const tafsirSourceLabel = document.querySelector("#tafsir-source-label");
 
+const UI_TRANSLATIONS = {
+  english: {
+    networkLink: "More from YouOOO",
+    heroEyebrow: "Quran Reading Experience",
+    heroTitle: "Read Quran Online with Translation, Tafsir, Audio & Word-by-Word Learning",
+    heroText:
+      "Free Quran reader for non-Arabic speakers. Read, listen, and understand the Quran with multiple languages, tafsir, audio recitation, and word-by-word translation.",
+    heroChipReadingTitle: "Reading Mode",
+    heroChipReadingText: "Mushaf page flow with chapter jump",
+    heroChipWordTitle: "Word Help",
+    heroChipWordText: "Tap or hover Arabic words to see translation",
+    heroChipTafsirTitle: "Tafsir",
+    heroChipTafsirText: "English or Arabic Sunni tafsir panel",
+    introEyebrow: "Understand The Quran",
+    introTitle: "Read Quran online with translation, tafsir, audio, and word-by-word help.",
+    introBody1:
+      "Quran YouOOO is built for people who want to read the Quran online with Arabic text, translation, word-by-word meaning, recitation, and Sunni tafsir in one simple place.",
+    introBody2:
+      "It is especially helpful for non-Arabic speakers, new Muslims, reverts, children growing up abroad, and anyone who wants to learn Quranic Arabic while reading the Quran.",
+    introBody3:
+      "Use this Quran reader to listen to recitation, move through Mushaf pages, choose translation languages, and study selected verses with tafsir notes. The goal is to make Quran study easier for people who want to read, listen, understand, and reflect without switching between many different tools.",
+    introTag1: "Read Quran online",
+    introTag2: "Word-by-word Quran",
+    introTag3: "Quran translation and tafsir",
+    introTag4: "Listen to Quran recitation",
+    controlsEyebrow: "Controls",
+    readerSetup: "Reader Setup",
+    interfaceLanguage: "Interface Language",
+    surahLabel: "Surah",
+    pageField: "Page",
+    prev: "Prev",
+    next: "Next",
+    translationLanguage: "Translation Language",
+    reciterLabel: "Reciter",
+    tafsirLanguage: "Tafsir Language",
+    englishTafsir: "English tafsir",
+    arabicTafsir: "Arabic tafsir",
+    juzLabel: "Juz",
+    searchLabel: "Search Surah / Ayah",
+    searchPlaceholder: "Al-Fatiha, 2:255, page 10",
+    go: "Go",
+    readingOptions: "Reading Options",
+    memorization: "Memorization",
+    repeatAyahOn: "Repeat ayah: on",
+    repeatAyahOff: "Repeat ayah: off",
+    shareLabel: "Share",
+    copySelectedVerseLink: "Copy selected verse link",
+    copied: "Copied",
+    linkReady: "Link ready in address bar",
+    readingSurface: "Reading Surface",
+    arabicText: "Arabic Text",
+    playSelectedAyah: "Play selected ayah",
+    playPageAyahByAyah: "Play page ayah by ayah",
+    playFullSurah: "Play full surah",
+    loadingQuranContent: "Loading Quran content...",
+    loadingChapterData: "Loading chapter data...",
+    sunniTafsir: "Sunni tafsir",
+    lookingForIbnKathir: "Looking for Ibn Kathir...",
+    recitationEyebrow: "Recitation",
+    makkahImamDefault: "Makkah Imam Default",
+    audioPanelCopy:
+      "Click an ayah once to start recitation immediately, play the page ayah by ayah, or switch to full surah playback.",
+    audioCaptionStart: "Click any ayah once to start playback.",
+    selectedVerseEyebrow: "Selected Verse",
+    translationHeading: "Translation",
+    selectedVerseEmpty: "Click any verse to load its translation and tafsir.",
+    tafsirEyebrow: "Tafsir",
+    sunniCommentary: "Sunni Commentary",
+    tafsirEmpty: "English or Arabic tafsir will appear here after you select a verse.",
+    footerBuiltBy: "Built with care by Ahmed Aldulaimi.",
+    footerLinkedIn: "Connect on LinkedIn",
+    footerNetwork: "YouOOO Network",
+    day: "Day",
+    night: "Night",
+    pageLabel: "Page {page}",
+    pageMeta: "Page {page}",
+    loadingPage: "Loading page {page}...",
+    noVersesReturned: "No verses were returned for this page.",
+    mixedPage: "Mixed page",
+    selectedTafsir: "Selected tafsir",
+    unknownReciter: "Unknown reciter",
+    juzzOption: "Juz {juz} - pages {start}-{end}",
+    translationUnavailable: "Translation unavailable for this verse in the selected language.",
+    tafsirUnavailable: "Tafsir unavailable for this verse from the selected Sunni source.",
+    loadingTafsir: "Loading tafsir...",
+    noWordTranslation: "No word translation",
+    followingFullSurah: "Following full surah: {verseKey} on page {page}",
+    fullSurahFollowFailed: "Still playing full surah. The next page could not load automatically.",
+    pressPlayToContinue: "Press play in the audio player to continue playback.",
+    audioUnavailable: "Audio is not available for {verseKey}.",
+    audioUnavailableThisAyah: "Audio is not available for this ayah.",
+    playingAyah: "Playing {verseKey}",
+    readyToPlayAyah: "Ready to play {verseKey}",
+    tafsirLoadFailed: "Tafsir could not be loaded right now. Please try another ayah or reload the page.",
+    contentLoadFailed:
+      "I could not load Quran content right now. The public API may be unavailable or rate-limiting this request.",
+    verseDetailsUnavailable: "Verse details unavailable.",
+    selectSurahFirst: "Select a surah or ayah first to play the full surah.",
+    playingFullSurah: "Playing full surah: {surah}",
+    fullSurahUnavailable: "Full surah playback is unavailable for this reciter right now.",
+    couldNotFindAyah: "Could not find ayah {verseKey}.",
+    searchHelp: "Search by surah name, page number, or ayah like 2:255.",
+    loadingQuranResources: "Loading Quran resources...",
+    defaultReciter: "Default reciter: {reciter}",
+    readerInitFailed:
+      "This reader could not initialize. The Quran data service may require access that is unavailable in this environment.",
+    finishedPagePlayback: "Finished page playback.",
+    english: "English",
+    arabic: "العربية",
+  },
+  arabic: {
+    networkLink: "المزيد من YouOOO",
+    heroEyebrow: "تجربة قراءة القرآن",
+    heroTitle: "اقرأ القرآن أونلاين مع الترجمة والتفسير والصوت ومعاني الكلمات",
+    heroText:
+      "قارئ قرآن مجاني لغير الناطقين بالعربية. اقرأ واستمع وافهم القرآن بلغات متعددة مع التفسير والتلاوة ومعاني الكلمات.",
+    heroChipReadingTitle: "وضع القراءة",
+    heroChipReadingText: "تدفق صفحات المصحف مع الانتقال بين السور",
+    heroChipWordTitle: "مساعدة الكلمات",
+    heroChipWordText: "اضغط أو مرر على الكلمات العربية لرؤية المعنى",
+    heroChipTafsirTitle: "التفسير",
+    heroChipTafsirText: "لوحة تفسير سني بالإنجليزية أو العربية",
+    introEyebrow: "افهم القرآن",
+    introTitle: "اقرأ القرآن أونلاين مع الترجمة والتفسير والصوت ومعاني الكلمات.",
+    introBody1:
+      "تم بناء Quran YouOOO لمن يريد قراءة القرآن أونلاين بالنص العربي والترجمة ومعاني الكلمات والتلاوة والتفسير السني في مكان واحد بسيط.",
+    introBody2:
+      "وهو مفيد خصوصًا لغير الناطقين بالعربية، والمسلمين الجدد، والعائدين للإسلام، والأطفال الذين يكبرون في الخارج، ولكل من يريد تعلم العربية القرآنية أثناء القراءة.",
+    introBody3:
+      "استخدم هذا القارئ للاستماع إلى التلاوة، والتنقل بين صفحات المصحف، واختيار لغة الترجمة، ودراسة الآيات المختارة مع ملاحظات التفسير. الهدف هو جعل دراسة القرآن أسهل دون الحاجة إلى التنقل بين أدوات كثيرة.",
+    introTag1: "قراءة القرآن أونلاين",
+    introTag2: "القرآن كلمة بكلمة",
+    introTag3: "ترجمة القرآن وتفسيره",
+    introTag4: "الاستماع إلى التلاوة",
+    controlsEyebrow: "التحكم",
+    readerSetup: "إعداد القارئ",
+    interfaceLanguage: "لغة الواجهة",
+    surahLabel: "السورة",
+    pageField: "الصفحة",
+    prev: "السابق",
+    next: "التالي",
+    translationLanguage: "لغة الترجمة",
+    reciterLabel: "القارئ",
+    tafsirLanguage: "لغة التفسير",
+    englishTafsir: "تفسير إنجليزي",
+    arabicTafsir: "تفسير عربي",
+    juzLabel: "الجزء",
+    searchLabel: "ابحث عن سورة / آية",
+    searchPlaceholder: "الفاتحة، 2:255، الصفحة 10",
+    go: "اذهب",
+    readingOptions: "خيارات القراءة",
+    memorization: "الحفظ",
+    repeatAyahOn: "تكرار الآية: تشغيل",
+    repeatAyahOff: "تكرار الآية: إيقاف",
+    shareLabel: "مشاركة",
+    copySelectedVerseLink: "نسخ رابط الآية المختارة",
+    copied: "تم النسخ",
+    linkReady: "الرابط جاهز في شريط العنوان",
+    readingSurface: "مساحة القراءة",
+    arabicText: "النص العربي",
+    playSelectedAyah: "تشغيل الآية المختارة",
+    playPageAyahByAyah: "تشغيل الصفحة آية بآية",
+    playFullSurah: "تشغيل السورة كاملة",
+    loadingQuranContent: "جارٍ تحميل محتوى القرآن...",
+    loadingChapterData: "جارٍ تحميل بيانات السورة...",
+    sunniTafsir: "تفسير سني",
+    lookingForIbnKathir: "جارٍ البحث عن ابن كثير...",
+    recitationEyebrow: "التلاوة",
+    makkahImamDefault: "إمام مكة الافتراضي",
+    audioPanelCopy:
+      "اضغط على أي آية مرة واحدة لبدء التلاوة فورًا، أو شغّل الصفحة آية بآية، أو انتقل إلى تشغيل السورة كاملة.",
+    audioCaptionStart: "اضغط على أي آية مرة واحدة لبدء التشغيل.",
+    selectedVerseEyebrow: "الآية المختارة",
+    translationHeading: "الترجمة",
+    selectedVerseEmpty: "اضغط على أي آية لتحميل ترجمتها وتفسيرها.",
+    tafsirEyebrow: "التفسير",
+    sunniCommentary: "شرح سني",
+    tafsirEmpty: "سيظهر التفسير الإنجليزي أو العربي هنا بعد اختيار آية.",
+    footerBuiltBy: "تم البناء بعناية بواسطة أحمد الدليمي.",
+    footerLinkedIn: "تواصل على لينكدإن",
+    footerNetwork: "شبكة YouOOO",
+    day: "نهاري",
+    night: "ليلي",
+    pageLabel: "الصفحة {page}",
+    pageMeta: "الصفحة {page}",
+    loadingPage: "جارٍ تحميل الصفحة {page}...",
+    noVersesReturned: "لم يتم إرجاع آيات لهذه الصفحة.",
+    mixedPage: "صفحة مختلطة",
+    selectedTafsir: "التفسير المختار",
+    unknownReciter: "قارئ غير معروف",
+    juzzOption: "الجزء {juz} - الصفحات {start}-{end}",
+    translationUnavailable: "الترجمة غير متاحة لهذه الآية باللغة المختارة.",
+    tafsirUnavailable: "التفسير غير متاح لهذه الآية من المصدر السني المختار.",
+    loadingTafsir: "جارٍ تحميل التفسير...",
+    noWordTranslation: "لا توجد ترجمة للكلمة",
+    followingFullSurah: "متابعة السورة الكاملة: {verseKey} في الصفحة {page}",
+    fullSurahFollowFailed: "ما زالت السورة الكاملة تعمل. تعذر تحميل الصفحة التالية تلقائيًا.",
+    pressPlayToContinue: "اضغط تشغيل في مشغل الصوت لمتابعة التشغيل.",
+    audioUnavailable: "الصوت غير متاح لـ {verseKey}.",
+    audioUnavailableThisAyah: "الصوت غير متاح لهذه الآية.",
+    playingAyah: "جارٍ تشغيل {verseKey}",
+    readyToPlayAyah: "جاهز لتشغيل {verseKey}",
+    tafsirLoadFailed: "تعذر تحميل التفسير الآن. جرّب آية أخرى أو أعد تحميل الصفحة.",
+    contentLoadFailed:
+      "تعذر تحميل محتوى القرآن الآن. قد تكون الواجهة العامة للخدمة غير متاحة أو تفرض قيودًا على الطلبات.",
+    verseDetailsUnavailable: "تفاصيل الآية غير متاحة.",
+    selectSurahFirst: "اختر سورة أو آية أولًا لتشغيل السورة كاملة.",
+    playingFullSurah: "جارٍ تشغيل السورة كاملة: {surah}",
+    fullSurahUnavailable: "تشغيل السورة كاملة غير متاح مع هذا القارئ الآن.",
+    couldNotFindAyah: "تعذر العثور على الآية {verseKey}.",
+    searchHelp: "ابحث باسم السورة أو رقم الصفحة أو آية مثل 2:255.",
+    loadingQuranResources: "جارٍ تحميل موارد القرآن...",
+    defaultReciter: "القارئ الافتراضي: {reciter}",
+    readerInitFailed:
+      "تعذر تهيئة هذا القارئ. قد تحتاج خدمة بيانات القرآن إلى وصول غير متاح في هذه البيئة.",
+    finishedPagePlayback: "اكتمل تشغيل الصفحة.",
+    english: "English",
+    arabic: "العربية",
+  },
+};
+
 const state = {
   chapters: [],
   translations: [],
@@ -81,6 +303,7 @@ const state = {
     fontScale: 1,
     theme: "light",
     repeatVerse: false,
+    uiLanguage: "english",
   },
   playback: {
     mode: "idle",
@@ -160,7 +383,38 @@ function applySavedPreferences() {
       fontScale: Number(saved.settings.fontScale) || 1,
       theme: saved.settings.theme === "dark" ? "dark" : "light",
       repeatVerse: Boolean(saved.settings.repeatVerse),
+      uiLanguage: saved.settings.uiLanguage === "arabic" ? "arabic" : "english",
     };
+  }
+}
+
+function t(key, vars = {}) {
+  const uiLanguage = state.settings.uiLanguage === "arabic" ? "arabic" : "english";
+  const template = UI_TRANSLATIONS[uiLanguage]?.[key] || UI_TRANSLATIONS.english[key] || key;
+  return Object.entries(vars).reduce(
+    (value, [name, replacement]) => value.replaceAll(`{${name}}`, String(replacement)),
+    template
+  );
+}
+
+function applyUiTranslations() {
+  document.body.dataset.uiLanguage = state.settings.uiLanguage;
+  document.documentElement.lang = state.settings.uiLanguage === "arabic" ? "ar" : "en";
+
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    element.setAttribute("placeholder", t(element.dataset.i18nPlaceholder));
+  });
+
+  if (uiLanguageSelect) {
+    uiLanguageSelect.value = state.settings.uiLanguage;
+    const englishOption = uiLanguageSelect.querySelector('option[value="english"]');
+    const arabicOption = uiLanguageSelect.querySelector('option[value="arabic"]');
+    if (englishOption) englishOption.textContent = t("english");
+    if (arabicOption) arabicOption.textContent = t("arabic");
   }
 }
 
@@ -181,7 +435,7 @@ async function fetchJson(path) {
   return response.json();
 }
 
-function setLoading(isLoading, message = "Loading Quran content...") {
+function setLoading(isLoading, message = t("loadingQuranContent")) {
   loadingEl.hidden = !isLoading;
   loadingEl.textContent = message;
 }
@@ -266,8 +520,9 @@ function applyReaderSettings(options = {}) {
   state.settings.fontScale = fontScale;
   document.documentElement.style.setProperty("--arabic-scale", fontScale.toFixed(2));
   document.body.dataset.theme = state.settings.theme === "dark" ? "dark" : "light";
-  themeToggleButton.textContent = state.settings.theme === "dark" ? "Day" : "Night";
-  repeatToggleButton.textContent = `Repeat ayah: ${state.settings.repeatVerse ? "on" : "off"}`;
+  applyUiTranslations();
+  themeToggleButton.textContent = state.settings.theme === "dark" ? t("day") : t("night");
+  repeatToggleButton.textContent = state.settings.repeatVerse ? t("repeatAyahOn") : t("repeatAyahOff");
   repeatToggleButton.setAttribute("aria-pressed", String(state.settings.repeatVerse));
   if (persist) {
     saveReaderState();
@@ -353,9 +608,9 @@ function chooseSunniTafsir(language = state.selectedTafsirLanguage) {
 }
 
 function updateTafsirLabels(tafsir) {
-  const languageLabel = state.selectedTafsirLanguage === "arabic" ? "Arabic tafsir" : "English tafsir";
+  const languageLabel = state.selectedTafsirLanguage === "arabic" ? t("arabicTafsir") : t("englishTafsir");
   tafsirLabel.textContent = languageLabel;
-  tafsirSourceLabel.textContent = tafsir?.name || tafsir?.translated_name?.name || "Selected tafsir";
+  tafsirSourceLabel.textContent = tafsir?.name || tafsir?.translated_name?.name || t("selectedTafsir");
   tafsirContentEl.classList.toggle("is-arabic", state.selectedTafsirLanguage === "arabic");
 }
 
@@ -411,7 +666,7 @@ function fillReciterSelect() {
   reciterSelect.innerHTML = availableRecitations
     .map(
       (reciter) =>
-        `<option value="${reciter.id}">${escapeHtml(reciter.reciter_name || "Unknown reciter")}</option>`
+        `<option value="${reciter.id}">${escapeHtml(reciter.reciter_name || t("unknownReciter"))}</option>`
     )
     .join("");
 
@@ -424,7 +679,7 @@ function fillJuzSelect() {
   juzSelect.innerHTML = JUZ_PAGE_STARTS.map((startPage, index) => {
     const juzNumber = index + 1;
     const endPage = JUZ_PAGE_STARTS[index + 1] ? JUZ_PAGE_STARTS[index + 1] - 1 : 604;
-    return `<option value="${juzNumber}">Juz ${juzNumber} - pages ${startPage}-${endPage}</option>`;
+    return `<option value="${juzNumber}">${escapeHtml(t("juzzOption", { juz: juzNumber, start: startPage, end: endPage }))}</option>`;
   }).join("");
   updateJuzSelect();
 }
@@ -432,8 +687,8 @@ function fillJuzSelect() {
 function fillTafsirLanguageSelect() {
   const availableLanguages = new Set(state.tafsirs.map((tafsir) => tafsir.language_name?.toLowerCase()).filter(Boolean));
   const options = [
-    { value: "english", label: "English tafsir" },
-    { value: "arabic", label: "Arabic tafsir" },
+    { value: "english", label: t("englishTafsir") },
+    { value: "arabic", label: t("arabicTafsir") },
   ].filter((option) => availableLanguages.has(option.value));
 
   tafsirLanguageSelect.innerHTML = options
@@ -448,7 +703,7 @@ function fillTafsirLanguageSelect() {
 
 function renderVerseDetails(verse, tafsirHtml) {
   const translationText =
-    verse?.translations?.[0]?.text || "Translation unavailable for this verse in the selected language.";
+    verse?.translations?.[0]?.text || t("translationUnavailable");
 
   selectedVerseEl.innerHTML = `
     <div class="selected-verse-arabic">${escapeHtml(verse?.text_uthmani || "")}</div>
@@ -457,12 +712,12 @@ function renderVerseDetails(verse, tafsirHtml) {
   `;
 
   tafsirContentEl.innerHTML =
-    tafsirHtml || "Tafsir unavailable for this verse from the selected Sunni source.";
+    tafsirHtml || t("tafsirUnavailable");
   tafsirContentEl.classList.toggle("is-arabic", state.selectedTafsirLanguage === "arabic");
 }
 
 function renderTafsirLoading(verse) {
-  renderVerseDetails(verse, "Loading tafsir...");
+  renderVerseDetails(verse, t("loadingTafsir"));
 }
 
 function highlightSelectedVerse(verseKey) {
@@ -602,7 +857,7 @@ function focusSurahVerse(verseKey) {
   if (state.selectedVerseKey !== verseKey) {
     highlightSelectedVerse(verseKey);
   }
-  renderVerseDetails(verse, state.tafsirByVerseKey[verseKey] || "Loading tafsir...");
+  renderVerseDetails(verse, state.tafsirByVerseKey[verseKey] || t("loadingTafsir"));
   loadTafsirForVerse(verseKey, verse);
   return verse;
 }
@@ -628,11 +883,11 @@ async function followSurahVersePage(verseKey) {
     });
 
     if (state.playback.mode === "surah" && state.playback.followRequestId === requestId) {
-      audioCaption.textContent = `Following full surah: ${verseKey} on page ${verse.page_number}`;
+      audioCaption.textContent = t("followingFullSurah", { verseKey, page: verse.page_number });
     }
   } catch (error) {
     if (state.playback.mode === "surah") {
-      audioCaption.textContent = "Still playing full surah. The next page could not load automatically.";
+      audioCaption.textContent = t("fullSurahFollowFailed");
     }
   } finally {
     if (state.playback.requestedVerseKey === verseKey) {
@@ -713,7 +968,7 @@ async function playAudioFromSource(sourceUrl, options = {}) {
     await audioPlayer.play();
     return true;
   } catch (error) {
-    audioCaption.textContent = "Press play in the audio player to continue playback.";
+    audioCaption.textContent = t("pressPlayToContinue");
     return false;
   }
 }
@@ -731,11 +986,15 @@ function prepareVersePlayback(verse, options = {}) {
   clearActiveWordHighlight();
 
   if (!audioUrl) {
-    audioCaption.textContent = `Audio is not available for ${verse?.verse_key || "this ayah"}.`;
+    audioCaption.textContent = verse?.verse_key
+      ? t("audioUnavailable", { verseKey: verse.verse_key })
+      : t("audioUnavailableThisAyah");
     return;
   }
 
-  audioCaption.textContent = autoplay ? `Playing ${verse.verse_key}` : `Ready to play ${verse.verse_key}`;
+  audioCaption.textContent = autoplay
+    ? t("playingAyah", { verseKey: verse.verse_key })
+    : t("readyToPlayAyah", { verseKey: verse.verse_key });
   if (autoplay) {
     playAudioFromSource(audioUrl, { startAt: 0 });
   } else if (audioPlayer.src !== audioUrl) {
@@ -754,13 +1013,13 @@ async function loadTafsirForVerse(verseKey, verse) {
 
   try {
     const result = await fetchJson(`/tafsirs/${state.selectedTafsirId}/by_ayah/${verseKey}`);
-    const tafsirHtml = result.tafsir?.text || "Tafsir unavailable for this verse from the selected Sunni source.";
+    const tafsirHtml = result.tafsir?.text || t("tafsirUnavailable");
     state.tafsirByVerseKey[verseKey] = tafsirHtml;
     if (state.selectedVerseKey === verseKey) {
       renderVerseDetails(verse, tafsirHtml);
     }
   } catch (error) {
-    const fallback = "Tafsir could not be loaded right now. Please try another ayah or reload the page.";
+    const fallback = t("tafsirLoadFailed");
     state.tafsirByVerseKey[verseKey] = fallback;
     if (state.selectedVerseKey === verseKey) {
       renderVerseDetails(verse, fallback);
@@ -776,7 +1035,7 @@ function selectVerse(verseKey, options = {}) {
   }
 
   highlightSelectedVerse(verseKey);
-  renderVerseDetails(verse, state.tafsirByVerseKey[verseKey] || "Loading tafsir...");
+  renderVerseDetails(verse, state.tafsirByVerseKey[verseKey] || t("loadingTafsir"));
   loadTafsirForVerse(verseKey, verse);
 
   if (!keepPlaybackMode) {
@@ -798,7 +1057,7 @@ function renderVerses(options = {}) {
     .map((verse) => {
       const words = getPlayableWords(verse)
         .map((word, index) => {
-          const translation = word.translation?.text || "No word translation";
+          const translation = word.translation?.text || t("noWordTranslation");
           return `
             <span
               class="word"
@@ -817,7 +1076,7 @@ function renderVerses(options = {}) {
         <article class="verse-card" data-verse-key="${verse.verse_key}">
           <div class="verse-meta">
             <span>${escapeHtml(verse.verse_key)}</span>
-            <span>Page ${escapeHtml(verse.page_number || state.currentPage)}</span>
+            <span>${escapeHtml(t("pageMeta", { page: verse.page_number || state.currentPage }))}</span>
           </div>
           <div class="verse-arabic">${words}</div>
           <div class="verse-translation">${translationText}</div>
@@ -880,9 +1139,9 @@ async function loadPage(page, options = {}) {
   state.currentPage = Math.max(1, Math.min(604, Number(page) || 1));
   state.tafsirByVerseKey = {};
   pageInput.value = String(state.currentPage);
-  pageLabel.textContent = `Page ${state.currentPage}`;
+  pageLabel.textContent = t("pageLabel", { page: state.currentPage });
   setError("");
-  setLoading(true, `Loading page ${state.currentPage}...`);
+  setLoading(true, t("loadingPage", { page: state.currentPage }));
   if (!preservePlayback) {
     clearPlaybackState();
   }
@@ -902,7 +1161,7 @@ async function loadPage(page, options = {}) {
     state.verses = result.verses || [];
 
     if (!state.verses.length) {
-      throw new Error("No verses were returned for this page.");
+      throw new Error(t("noVersesReturned"));
     }
 
     const chapter = getChapterForPage(state.currentPage);
@@ -910,7 +1169,7 @@ async function loadPage(page, options = {}) {
       chapterLabel.textContent = `${chapter.id}. ${chapter.name_simple} (${chapter.name_arabic})`;
       chapterSelect.value = String(chapter.id);
     } else {
-      chapterLabel.textContent = "Mixed page";
+      chapterLabel.textContent = t("mixedPage");
     }
     updateJuzSelect();
 
@@ -925,11 +1184,11 @@ async function loadPage(page, options = {}) {
     saveReaderState();
   } catch (error) {
     setError(
-      "I could not load Quran content right now. The public API may be unavailable or rate-limiting this request."
+      t("contentLoadFailed")
     );
     versesContainer.innerHTML = "";
-    selectedVerseEl.textContent = "Verse details unavailable.";
-    tafsirContentEl.textContent = "Tafsir unavailable.";
+    selectedVerseEl.textContent = t("verseDetailsUnavailable");
+    tafsirContentEl.textContent = t("tafsirUnavailable");
   } finally {
     setLoading(false);
   }
@@ -986,7 +1245,7 @@ async function primeSelectedChapterAudio() {
 async function playFullSurah() {
   const chapter = getSelectedChapter();
   if (!chapter || !state.selectedReciterId) {
-    audioCaption.textContent = "Select a surah or ayah first to play the full surah.";
+    audioCaption.textContent = t("selectSurahFirst");
     return;
   }
 
@@ -1008,21 +1267,21 @@ async function playFullSurah() {
     }
 
     state.playback.surahTimestamps = chapterAudio.timestamps || [];
-    audioCaption.textContent = `Playing full surah: ${chapter.name_simple}`;
+    audioCaption.textContent = t("playingFullSurah", { surah: chapter.name_simple });
     if (state.playback.surahTimestamps[0]?.verse_key) {
       highlightSelectedVerse(state.playback.surahTimestamps[0].verse_key);
     }
     await playAudioFromSource(audioUrl, { startAt: 0 });
   } catch (error) {
     state.playback.mode = "idle";
-    audioCaption.textContent = "Full surah playback is unavailable for this reciter right now.";
+    audioCaption.textContent = t("fullSurahUnavailable");
   }
 }
 
 async function goToVerseKey(verseKey) {
   const verse = await fetchVerseByKey(verseKey);
   if (!verse?.page_number) {
-    audioCaption.textContent = `Could not find ayah ${verseKey}.`;
+    audioCaption.textContent = t("couldNotFindAyah", { verseKey });
     return;
   }
   await loadPage(verse.page_number, { preferredVerseKey: verseKey });
@@ -1069,11 +1328,11 @@ async function runReaderSearch() {
     return;
   }
 
-  audioCaption.textContent = "Search by surah name, page number, or ayah like 2:255.";
+  audioCaption.textContent = t("searchHelp");
 }
 
 async function bootstrap() {
-  setLoading(true, "Loading Quran resources...");
+  setLoading(true, t("loadingQuranResources"));
 
   try {
     const [chaptersResult, translationsResult, recitationsResult, tafsirsResult] = await Promise.all([
@@ -1109,7 +1368,7 @@ async function bootstrap() {
     applyReaderSettings({ persist: false });
 
     if (chosenReciter) {
-      audioCaption.textContent = `Default reciter: ${chosenReciter.reciter_name}`;
+      audioCaption.textContent = t("defaultReciter", { reciter: chosenReciter.reciter_name });
     }
 
     const initialTarget = getInitialTarget();
@@ -1121,7 +1380,7 @@ async function bootstrap() {
     }
   } catch (error) {
     setError(
-      "This reader could not initialize. The Quran data service may require access that is unavailable in this environment."
+      t("readerInitFailed")
     );
     setLoading(false);
   }
@@ -1150,6 +1409,15 @@ readerSearch.addEventListener("keydown", (event) => {
   }
 });
 
+uiLanguageSelect?.addEventListener("change", () => {
+  state.settings.uiLanguage = uiLanguageSelect.value === "arabic" ? "arabic" : "english";
+  applyReaderSettings();
+  fillJuzSelect();
+  fillTafsirLanguageSelect();
+  updateTafsirLabels(chooseSunniTafsir());
+  pageLabel.textContent = t("pageLabel", { page: state.currentPage });
+});
+
 languageSelect.addEventListener("change", () => {
   state.selectedLanguageCode = languageSelect.value;
   const translation = chooseTranslation(state.selectedLanguageCode);
@@ -1174,7 +1442,7 @@ tafsirLanguageSelect.addEventListener("change", () => {
 
   const verse = getVerseByKey(state.selectedVerseKey);
   if (verse) {
-    renderVerseDetails(verse, "Loading tafsir...");
+    renderVerseDetails(verse, t("loadingTafsir"));
     loadTafsirForVerse(verse.verse_key, verse);
   }
 });
@@ -1203,12 +1471,12 @@ copyVerseLinkButton.addEventListener("click", async () => {
   const link = window.location.href;
   try {
     await navigator.clipboard.writeText(link);
-    copyVerseLinkButton.textContent = "Copied";
+    copyVerseLinkButton.textContent = t("copied");
   } catch (error) {
-    copyVerseLinkButton.textContent = "Link ready in address bar";
+    copyVerseLinkButton.textContent = t("linkReady");
   }
   setTimeout(() => {
-    copyVerseLinkButton.textContent = "Copy selected verse link";
+    copyVerseLinkButton.textContent = t("copySelectedVerseLink");
   }, 1800);
 });
 playSelectedButton.addEventListener("click", playSelectedVerse);
@@ -1245,7 +1513,7 @@ audioPlayer.addEventListener("ended", () => {
   const nextVerseKey = state.playback.queue[state.playback.queueIndex];
   if (!nextVerseKey) {
     clearPlaybackState();
-    audioCaption.textContent = "Finished page playback.";
+    audioCaption.textContent = t("finishedPagePlayback");
     return;
   }
 
