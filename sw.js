@@ -1,9 +1,9 @@
-const CACHE = "quran-v1";
+const CACHE = "quran-v2";
 const STATIC = [
   "/",
   "/index.html",
-  "/style.css",
-  "/script.js",
+  "/style.css?v=20260510b",
+  "/script.js?v=20260510b",
   "/manifest.json",
   "/favicon.png",
 ];
