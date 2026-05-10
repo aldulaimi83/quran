@@ -291,6 +291,7 @@
             <button id="play-selected" class="primary-button" type="button" data-i18n="playSelectedAyah">Play selected ayah</button>
             <button id="play-page" class="ghost-button" type="button" data-i18n="playPageAyahByAyah">Play page ayah by ayah</button>
             <button id="play-surah" class="ghost-button" type="button" data-i18n="playFullSurah">Play full surah</button>
+            <button id="open-fullscreen-reading" class="ghost-button" type="button">Full Screen Reading Mode</button>
           </div>
         </div>
 
@@ -368,6 +369,37 @@
   </footer>
 
   <div id="word-tooltip" class="word-tooltip" hidden></div>
+
+  <div id="mushaf-overlay" class="mushaf-overlay" hidden aria-hidden="true">
+    <div class="mushaf-overlay-backdrop" data-close-overlay="true"></div>
+    <section class="mushaf-dialog" role="dialog" aria-modal="true" aria-labelledby="mushaf-title">
+      <header class="mushaf-topbar">
+        <div>
+          <p class="eyebrow">Full Screen Mushaf Listening Mode</p>
+          <h2 id="mushaf-title">Quran Reading Mode</h2>
+        </div>
+        <div class="mushaf-topbar-meta">
+          <span id="mushaf-reciter-label" class="mushaf-meta-pill">Reciter</span>
+          <span id="mushaf-progress-label" class="mushaf-meta-pill">Ayah 1 of 1</span>
+          <button id="close-mushaf-overlay" class="mushaf-close-button" type="button" aria-label="Close full screen reading mode">X</button>
+        </div>
+      </header>
+
+      <div class="mushaf-controls">
+        <button id="mushaf-prev-ayah" class="ghost-button" type="button">Previous ayah</button>
+        <button id="mushaf-play-toggle" class="primary-button" type="button">Play</button>
+        <button id="mushaf-next-ayah" class="ghost-button" type="button">Next ayah</button>
+        <button id="mushaf-repeat-toggle" class="ghost-button" type="button">Repeat ayah: off</button>
+        <button id="mushaf-exit-button" class="ghost-button" type="button">Exit full screen</button>
+      </div>
+
+      <div class="mushaf-reader-shell">
+        <div class="mushaf-page-frame">
+          <div id="mushaf-verses" class="mushaf-verses" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <script src="script.js"></script>
   <script>

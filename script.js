@@ -50,6 +50,7 @@ const copyVerseLinkButton = document.querySelector("#copy-verse-link");
 const playSelectedButton = document.querySelector("#play-selected");
 const playPageButton = document.querySelector("#play-page");
 const playSurahButton = document.querySelector("#play-surah");
+const openFullscreenReadingButton = document.querySelector("#open-fullscreen-reading");
 const versesContainer = document.querySelector("#verses");
 const loadingEl = document.querySelector("#loading");
 const errorEl = document.querySelector("#error");
@@ -62,6 +63,17 @@ const pageLabel = document.querySelector("#page-label");
 const chapterLabel = document.querySelector("#chapter-label");
 const tafsirLabel = document.querySelector("#tafsir-label");
 const tafsirSourceLabel = document.querySelector("#tafsir-source-label");
+const mushafOverlay = document.querySelector("#mushaf-overlay");
+const mushafVersesContainer = document.querySelector("#mushaf-verses");
+const mushafTitle = document.querySelector("#mushaf-title");
+const mushafReciterLabel = document.querySelector("#mushaf-reciter-label");
+const mushafProgressLabel = document.querySelector("#mushaf-progress-label");
+const mushafPlayToggleButton = document.querySelector("#mushaf-play-toggle");
+const mushafPrevAyahButton = document.querySelector("#mushaf-prev-ayah");
+const mushafNextAyahButton = document.querySelector("#mushaf-next-ayah");
+const mushafRepeatToggleButton = document.querySelector("#mushaf-repeat-toggle");
+const closeMushafOverlayButton = document.querySelector("#close-mushaf-overlay");
+const mushafExitButton = document.querySelector("#mushaf-exit-button");
 
 const UI_TRANSLATIONS = {
   english: {
@@ -117,6 +129,7 @@ const UI_TRANSLATIONS = {
     playSelectedAyah: "Play selected ayah",
     playPageAyahByAyah: "Play page ayah by ayah",
     playFullSurah: "Play full surah",
+    fullScreenReadingMode: "Full Screen Reading Mode",
     loadingQuranContent: "Loading Quran content...",
     loadingChapterData: "Loading chapter data...",
     sunniTafsir: "Sunni tafsir",
@@ -170,6 +183,14 @@ const UI_TRANSLATIONS = {
     readerInitFailed:
       "This reader could not initialize. The Quran data service may require access that is unavailable in this environment.",
     finishedPagePlayback: "Finished page playback.",
+    fullScreenMushafMode: "Full Screen Mushaf Listening Mode",
+    quranReadingMode: "Quran Reading Mode",
+    play: "Play",
+    pause: "Pause",
+    previousAyah: "Previous ayah",
+    nextAyah: "Next ayah",
+    exitFullScreen: "Exit full screen",
+    ayahProgress: "Ayah {current} of {total}",
     english: "English",
     arabic: "العربية",
   },
@@ -226,6 +247,7 @@ const UI_TRANSLATIONS = {
     playSelectedAyah: "تشغيل الآية المختارة",
     playPageAyahByAyah: "تشغيل الصفحة آية بآية",
     playFullSurah: "تشغيل السورة كاملة",
+    fullScreenReadingMode: "وضع القراءة بملء الشاشة",
     loadingQuranContent: "جارٍ تحميل محتوى القرآن...",
     loadingChapterData: "جارٍ تحميل بيانات السورة...",
     sunniTafsir: "تفسير سني",
@@ -279,6 +301,14 @@ const UI_TRANSLATIONS = {
     readerInitFailed:
       "تعذر تهيئة هذا القارئ. قد تحتاج خدمة بيانات القرآن إلى وصول غير متاح في هذه البيئة.",
     finishedPagePlayback: "اكتمل تشغيل الصفحة.",
+    fullScreenMushafMode: "وضع المصحف بملء الشاشة",
+    quranReadingMode: "وضع قراءة القرآن",
+    play: "تشغيل",
+    pause: "إيقاف",
+    previousAyah: "الآية السابقة",
+    nextAyah: "الآية التالية",
+    exitFullScreen: "الخروج من ملء الشاشة",
+    ayahProgress: "الآية {current} من {total}",
     english: "English",
     arabic: "العربية",
   },
@@ -316,6 +346,11 @@ const state = {
     followRequestId: 0,
     requestedVerseKey: null,
     focusedSurahVerseKey: null,
+  },
+  fullScreen: {
+    isOpen: false,
+    chapterId: null,
+    versesByChapter: {},
   },
 };
 
@@ -416,6 +451,16 @@ function applyUiTranslations() {
     if (englishOption) englishOption.textContent = t("english");
     if (arabicOption) arabicOption.textContent = t("arabic");
   }
+
+  if (openFullscreenReadingButton) openFullscreenReadingButton.textContent = t("fullScreenReadingMode");
+  if (mushafPlayToggleButton) mushafPlayToggleButton.textContent = audioPlayer?.paused ? t("play") : t("pause");
+  if (mushafPrevAyahButton) mushafPrevAyahButton.textContent = t("previousAyah");
+  if (mushafNextAyahButton) mushafNextAyahButton.textContent = t("nextAyah");
+  if (mushafExitButton) mushafExitButton.textContent = t("exitFullScreen");
+  if (mushafRepeatToggleButton) mushafRepeatToggleButton.textContent = state.settings.repeatVerse ? t("repeatAyahOn") : t("repeatAyahOff");
+  if (mushafOverlay && state.fullScreen.isOpen) {
+    updateMushafOverlayHeader();
+  }
 }
 
 function escapeHtml(value) {
@@ -477,6 +522,26 @@ function getSelectedChapter() {
     return state.chapters.find((chapter) => chapter.id === chapterId);
   }
   return state.chapters.find((chapter) => chapter.id === Number(chapterSelect.value)) || getChapterForPage(state.currentPage);
+}
+
+function getChapterById(chapterId) {
+  return state.chapters.find((chapter) => chapter.id === Number(chapterId)) || null;
+}
+
+function getSelectedReciter() {
+  return state.recitations.find((reciter) => reciter.id === Number(state.selectedReciterId)) || null;
+}
+
+function getCurrentVerseKeyForOverlay() {
+  return state.playback.activeVerseKey || state.selectedVerseKey || state.fullScreen.versesByChapter[state.fullScreen.chapterId]?.[0]?.verse_key || null;
+}
+
+function isOverlayChapterActive() {
+  if (!state.fullScreen.chapterId) {
+    return false;
+  }
+  const activeVerseKey = getCurrentVerseKeyForOverlay();
+  return Number(String(activeVerseKey || "").split(":")[0]) === Number(state.fullScreen.chapterId);
 }
 
 function getPlayableWords(verse) {
@@ -701,6 +766,232 @@ function fillTafsirLanguageSelect() {
   tafsirLanguageSelect.value = state.selectedTafsirLanguage;
 }
 
+async function fetchChapterVerses(chapterId) {
+  const params = new URLSearchParams({
+    words: "true",
+    language: getApiLanguageCode(state.selectedLanguageCode),
+    translations: String(state.selectedTranslationId),
+    audio: String(state.selectedReciterId),
+    per_page: "300",
+    fields: "text_uthmani,verse_key,page_number",
+    word_fields: "text_uthmani",
+  });
+
+  const result = await fetchJson(`/verses/by_chapter/${chapterId}?${params.toString()}`);
+  return result.verses || [];
+}
+
+function getOverlayChapterVerses() {
+  return state.fullScreen.versesByChapter[state.fullScreen.chapterId] || [];
+}
+
+function updateMushafOverlayHeader() {
+  if (!mushafOverlay) {
+    return;
+  }
+
+  const chapter = getChapterById(state.fullScreen.chapterId) || getSelectedChapter();
+  const reciter = getSelectedReciter();
+  const verses = getOverlayChapterVerses();
+  const activeVerseKey = getCurrentVerseKeyForOverlay();
+  const activeIndex = Math.max(verses.findIndex((verse) => verse.verse_key === activeVerseKey), 0);
+
+  mushafTitle.textContent = chapter
+    ? `${chapter.id}. ${chapter.name_simple} - ${chapter.name_arabic}`
+    : t("quranReadingMode");
+  mushafReciterLabel.textContent = reciter?.reciter_name || t("unknownReciter");
+  mushafProgressLabel.textContent = t("ayahProgress", { current: verses.length ? activeIndex + 1 : 0, total: verses.length || 0 });
+  mushafPlayToggleButton.textContent = audioPlayer.paused ? t("play") : t("pause");
+  mushafRepeatToggleButton.textContent = state.settings.repeatVerse ? t("repeatAyahOn") : t("repeatAyahOff");
+}
+
+function renderMushafOverlayVerses() {
+  if (!mushafVersesContainer) {
+    return;
+  }
+
+  const verses = getOverlayChapterVerses();
+  mushafVersesContainer.innerHTML = verses
+    .map((verse) => {
+      const words = getPlayableWords(verse)
+        .map(
+          (word, index) => `
+            <span
+              class="mushaf-word"
+              data-mushaf-verse-key="${escapeHtml(verse.verse_key)}"
+              data-mushaf-word-index="${index}"
+            >${escapeHtml(word.text_uthmani || word.text || "")}</span>
+          `
+        )
+        .join(" ");
+
+      return `
+        <article class="mushaf-ayah" data-mushaf-verse-key="${escapeHtml(verse.verse_key)}">
+          <div class="mushaf-ayah-meta">
+            <span>${escapeHtml(verse.verse_key)}</span>
+            <span>${escapeHtml(t("pageMeta", { page: verse.page_number || state.currentPage }))}</span>
+          </div>
+          <div class="mushaf-ayah-arabic">${words}</div>
+          <div class="mushaf-ayah-translation">${verse.translations?.[0]?.text || ""}</div>
+        </article>
+      `;
+    })
+    .join("");
+
+  mushafVersesContainer.querySelectorAll(".mushaf-ayah").forEach((ayahEl) => {
+    ayahEl.addEventListener("click", () => {
+      const verseKey = ayahEl.dataset.mushafVerseKey;
+      if (!verseKey) {
+        return;
+      }
+      state.playback.mode = "verse";
+      selectVerse(verseKey, { autoplay: true });
+      syncMushafPlaybackState();
+    });
+  });
+
+  syncMushafPlaybackState();
+}
+
+function syncMushafPlaybackState() {
+  if (!mushafOverlay || !state.fullScreen.isOpen) {
+    return;
+  }
+
+  const selectedVerseKey = state.selectedVerseKey;
+  const activeVerseKey = state.playback.activeVerseKey;
+  const activeWordIndex = state.playback.activeWordIndex;
+
+  mushafVersesContainer.querySelectorAll(".mushaf-ayah").forEach((ayahEl) => {
+    ayahEl.classList.toggle("is-selected", ayahEl.dataset.mushafVerseKey === selectedVerseKey);
+    ayahEl.classList.toggle("is-active", ayahEl.dataset.mushafVerseKey === activeVerseKey);
+  });
+
+  mushafVersesContainer.querySelectorAll(".mushaf-word.is-playing").forEach((wordEl) => {
+    wordEl.classList.remove("is-playing");
+  });
+
+  if (activeVerseKey && activeWordIndex >= 0) {
+    const activeWord = mushafVersesContainer.querySelector(
+      `.mushaf-word[data-mushaf-verse-key="${activeVerseKey}"][data-mushaf-word-index="${activeWordIndex}"]`
+    );
+    if (activeWord) {
+      activeWord.classList.add("is-playing");
+    }
+  }
+
+  const targetVerseKey = activeVerseKey || selectedVerseKey;
+  if (targetVerseKey) {
+    const activeAyah = mushafVersesContainer.querySelector(`.mushaf-ayah[data-mushaf-verse-key="${targetVerseKey}"]`);
+    if (activeAyah) {
+      activeAyah.scrollIntoView({ behavior: audioPlayer.paused ? "smooth" : "auto", block: "center" });
+    }
+  }
+
+  updateMushafOverlayHeader();
+}
+
+async function openMushafOverlay() {
+  const chapter = getSelectedChapter();
+  if (!chapter) {
+    return;
+  }
+
+  state.fullScreen.chapterId = chapter.id;
+  if (!state.fullScreen.versesByChapter[chapter.id]) {
+    mushafVersesContainer.innerHTML = `<div class="loading-state">${t("loadingChapterData")}</div>`;
+    try {
+      state.fullScreen.versesByChapter[chapter.id] = await fetchChapterVerses(chapter.id);
+    } catch (error) {
+      mushafVersesContainer.innerHTML = `<div class="error-state">${t("contentLoadFailed")}</div>`;
+      return;
+    }
+  }
+
+  state.fullScreen.isOpen = true;
+  mushafOverlay.hidden = false;
+  mushafOverlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  renderMushafOverlayVerses();
+}
+
+function closeMushafOverlay() {
+  state.fullScreen.isOpen = false;
+  mushafOverlay.hidden = true;
+  mushafOverlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function getOverlayVerseIndex() {
+  const verses = getOverlayChapterVerses();
+  const verseKey = getCurrentVerseKeyForOverlay();
+  return Math.max(verses.findIndex((verse) => verse.verse_key === verseKey), 0);
+}
+
+async function seekSurahPlaybackToVerse(verseKey) {
+  const timestamp = state.playback.surahTimestamps.find((item) => item.verse_key === verseKey);
+  if (!timestamp) {
+    return false;
+  }
+
+  focusSurahVerse(verseKey);
+  state.playback.activeVerseKey = verseKey;
+  clearActiveWordHighlight();
+  audioPlayer.currentTime = (timestamp.timestamp_from || 0) / 1000;
+  try {
+    await audioPlayer.play();
+  } catch (error) {
+    audioCaption.textContent = t("pressPlayToContinue");
+  }
+  syncMushafPlaybackState();
+  return true;
+}
+
+async function stepMushafVerse(direction) {
+  const verses = getOverlayChapterVerses();
+  if (!verses.length) {
+    return;
+  }
+
+  const nextIndex = Math.min(Math.max(getOverlayVerseIndex() + direction, 0), verses.length - 1);
+  const nextVerse = verses[nextIndex];
+  if (!nextVerse) {
+    return;
+  }
+
+  if (state.playback.mode === "surah" && isOverlayChapterActive() && state.playback.surahTimestamps.length) {
+    const moved = await seekSurahPlaybackToVerse(nextVerse.verse_key);
+    if (moved) {
+      return;
+    }
+  }
+
+  state.playback.mode = "verse";
+  selectVerse(nextVerse.verse_key, { autoplay: true });
+  syncMushafPlaybackState();
+}
+
+async function toggleMushafPlayback() {
+  if (audioPlayer.src && !audioPlayer.paused && isOverlayChapterActive()) {
+    audioPlayer.pause();
+    updateMushafOverlayHeader();
+    return;
+  }
+
+  if (audioPlayer.src && audioPlayer.paused && isOverlayChapterActive()) {
+    try {
+      await audioPlayer.play();
+    } catch (error) {
+      audioCaption.textContent = t("pressPlayToContinue");
+    }
+    updateMushafOverlayHeader();
+    return;
+  }
+
+  await playFullSurah();
+  syncMushafPlaybackState();
+}
+
 function renderVerseDetails(verse, tafsirHtml) {
   const translationText =
     verse?.translations?.[0]?.text || t("translationUnavailable");
@@ -725,6 +1016,7 @@ function highlightSelectedVerse(verseKey) {
   document.querySelectorAll(".verse-card").forEach((card) => {
     card.classList.toggle("is-selected", card.dataset.verseKey === verseKey);
   });
+  syncMushafPlaybackState();
 }
 
 function clearActiveWordHighlight() {
@@ -732,6 +1024,7 @@ function clearActiveWordHighlight() {
   document.querySelectorAll(".word.is-playing").forEach((word) => {
     word.classList.remove("is-playing");
   });
+  syncMushafPlaybackState();
 }
 
 function setActiveWord(verseKey, wordIndex) {
@@ -748,6 +1041,7 @@ function setActiveWord(verseKey, wordIndex) {
   if (activeWord) {
     activeWord.classList.add("is-playing");
   }
+  syncMushafPlaybackState();
 }
 
 function buildWordTimingsFromSegments(words, rawSegments) {
@@ -857,8 +1151,10 @@ function focusSurahVerse(verseKey) {
   if (state.selectedVerseKey !== verseKey) {
     highlightSelectedVerse(verseKey);
   }
+  state.playback.activeVerseKey = verseKey;
   renderVerseDetails(verse, state.tafsirByVerseKey[verseKey] || t("loadingTafsir"));
   loadTafsirForVerse(verseKey, verse);
+  syncMushafPlaybackState();
   return verse;
 }
 
@@ -945,6 +1241,7 @@ function clearPlaybackState() {
   state.playback.requestedVerseKey = null;
   state.playback.focusedSurahVerseKey = null;
   clearActiveWordHighlight();
+  syncMushafPlaybackState();
 }
 
 async function playAudioFromSource(sourceUrl, options = {}) {
@@ -984,6 +1281,7 @@ function prepareVersePlayback(verse, options = {}) {
   }));
   state.playback.surahTimestamps = [];
   clearActiveWordHighlight();
+  syncMushafPlaybackState();
 
   if (!audioUrl) {
     audioCaption.textContent = verse?.verse_key
@@ -1270,8 +1568,10 @@ async function playFullSurah() {
     audioCaption.textContent = t("playingFullSurah", { surah: chapter.name_simple });
     if (state.playback.surahTimestamps[0]?.verse_key) {
       highlightSelectedVerse(state.playback.surahTimestamps[0].verse_key);
+      state.playback.activeVerseKey = state.playback.surahTimestamps[0].verse_key;
     }
     await playAudioFromSource(audioUrl, { startAt: 0 });
+    syncMushafPlaybackState();
   } catch (error) {
     state.playback.mode = "idle";
     audioCaption.textContent = t("fullSurahUnavailable");
@@ -1420,6 +1720,7 @@ uiLanguageSelect?.addEventListener("change", () => {
 
 languageSelect.addEventListener("change", () => {
   state.selectedLanguageCode = languageSelect.value;
+  state.fullScreen.versesByChapter = {};
   const translation = chooseTranslation(state.selectedLanguageCode);
   if (translation) {
     state.selectedTranslationId = translation.id;
@@ -1430,6 +1731,7 @@ languageSelect.addEventListener("change", () => {
 reciterSelect.addEventListener("change", () => {
   state.selectedReciterId = Number(reciterSelect.value);
   state.surahAudioByKey = {};
+  state.fullScreen.versesByChapter = {};
   loadPage(state.currentPage);
 });
 
@@ -1482,21 +1784,78 @@ copyVerseLinkButton.addEventListener("click", async () => {
 playSelectedButton.addEventListener("click", playSelectedVerse);
 playPageButton.addEventListener("click", playCurrentPageVerseByVerse);
 playSurahButton.addEventListener("click", playFullSurah);
+openFullscreenReadingButton?.addEventListener("click", openMushafOverlay);
+closeMushafOverlayButton?.addEventListener("click", closeMushafOverlay);
+mushafExitButton?.addEventListener("click", closeMushafOverlay);
+mushafRepeatToggleButton?.addEventListener("click", () => {
+  state.settings.repeatVerse = !state.settings.repeatVerse;
+  applyReaderSettings();
+  syncMushafPlaybackState();
+});
+mushafPlayToggleButton?.addEventListener("click", toggleMushafPlayback);
+mushafPrevAyahButton?.addEventListener("click", () => stepMushafVerse(-1));
+mushafNextAyahButton?.addEventListener("click", () => stepMushafVerse(1));
+mushafOverlay?.addEventListener("click", (event) => {
+  if (event.target.dataset.closeOverlay === "true") {
+    closeMushafOverlay();
+  }
+});
 document.addEventListener("click", (event) => {
   if (!event.target.closest(".word")) {
     hideTooltip();
   }
 });
 
+document.addEventListener("keydown", (event) => {
+  if (!state.fullScreen.isOpen) {
+    return;
+  }
+
+  const tagName = event.target?.tagName;
+  if (["INPUT", "SELECT", "TEXTAREA"].includes(tagName)) {
+    return;
+  }
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeMushafOverlay();
+    return;
+  }
+
+  if (event.key === " ") {
+    event.preventDefault();
+    toggleMushafPlayback();
+    return;
+  }
+
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    stepMushafVerse(1);
+    return;
+  }
+
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    stepMushafVerse(-1);
+  }
+});
+
 audioPlayer.addEventListener("timeupdate", syncWordTracking);
 audioPlayer.addEventListener("pause", () => {
   if (audioPlayer.ended || state.playback.mode === "page" || state.playback.mode === "surah") {
+    updateMushafOverlayHeader();
     return;
   }
   clearActiveWordHighlight();
+  updateMushafOverlayHeader();
+});
+audioPlayer.addEventListener("play", () => {
+  updateMushafOverlayHeader();
+  syncMushafPlaybackState();
 });
 audioPlayer.addEventListener("ended", () => {
   clearActiveWordHighlight();
+  updateMushafOverlayHeader();
 
   if (state.settings.repeatVerse && state.playback.mode === "verse" && state.playback.activeVerseKey) {
     const verseKey = state.playback.activeVerseKey;
