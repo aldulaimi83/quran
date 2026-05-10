@@ -898,8 +898,14 @@ async function openMushafOverlay() {
   }
 
   state.fullScreen.chapterId = chapter.id;
+  state.fullScreen.isOpen = true;
+  mushafOverlay.hidden = false;
+  mushafOverlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  mushafVersesContainer.innerHTML = `<div class="loading-state">${t("loadingChapterData")}</div>`;
+  updateMushafOverlayHeader();
+
   if (!state.fullScreen.versesByChapter[chapter.id]) {
-    mushafVersesContainer.innerHTML = `<div class="loading-state">${t("loadingChapterData")}</div>`;
     try {
       state.fullScreen.versesByChapter[chapter.id] = await fetchChapterVerses(chapter.id);
     } catch (error) {
@@ -908,10 +914,6 @@ async function openMushafOverlay() {
     }
   }
 
-  state.fullScreen.isOpen = true;
-  mushafOverlay.hidden = false;
-  mushafOverlay.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
   renderMushafOverlayVerses();
 }
 
