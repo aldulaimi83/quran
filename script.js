@@ -68,6 +68,8 @@ const mushafVersesContainer = document.querySelector("#mushaf-verses");
 const mushafTitle = document.querySelector("#mushaf-title");
 const mushafReciterLabel = document.querySelector("#mushaf-reciter-label");
 const mushafProgressLabel = document.querySelector("#mushaf-progress-label");
+const mushafPageSurahLabel = document.querySelector("#mushaf-page-surah-label");
+const mushafPageFooterLabel = document.querySelector("#mushaf-page-footer-label");
 const mushafPlayToggleButton = document.querySelector("#mushaf-play-toggle");
 const mushafPrevAyahButton = document.querySelector("#mushaf-prev-ayah");
 const mushafNextAyahButton = document.querySelector("#mushaf-next-ayah");
@@ -799,6 +801,16 @@ function updateMushafOverlayHeader() {
   mushafTitle.textContent = chapter
     ? `${chapter.id}. ${chapter.name_simple} - ${chapter.name_arabic}`
     : t("quranReadingMode");
+  if (mushafPageSurahLabel) {
+    mushafPageSurahLabel.textContent = chapter
+      ? `${chapter.name_simple} - ${chapter.name_arabic}`
+      : t("quranReadingMode");
+  }
+  if (mushafPageFooterLabel) {
+    mushafPageFooterLabel.textContent = chapter
+      ? `${t("pageLabel", { page: state.currentPage })} · ${chapter.name_simple}`
+      : t("quranReadingMode");
+  }
   mushafReciterLabel.textContent = reciter?.reciter_name || t("unknownReciter");
   mushafProgressLabel.textContent = t("ayahProgress", { current: verses.length ? activeIndex + 1 : 0, total: verses.length || 0 });
   mushafPlayToggleButton.textContent = audioPlayer.paused ? t("play") : t("pause");
