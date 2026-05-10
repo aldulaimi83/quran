@@ -257,6 +257,100 @@ select {
   transform: translateY(-2px);
 }
 
+.study-resources .panel-heading {
+  align-items: flex-start;
+}
+
+.resource-highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.resource-card {
+  padding: 1.15rem;
+  border-radius: 24px;
+  border: 1px solid rgba(35, 70, 56, 0.12);
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,233,195,0.6));
+}
+
+.resource-kicker {
+  margin: 0 0 0.45rem;
+  color: var(--gold);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.resource-card h3 {
+  margin: 0;
+  font-family: "Syne", sans-serif;
+  font-size: 1.15rem;
+  line-height: 1.25;
+  color: var(--green);
+}
+
+.resource-link-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.resource-link-list a {
+  color: var(--green);
+  text-decoration: none;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.resource-link-list a:hover {
+  color: var(--gold);
+}
+
+.resource-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+
+.resource-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 1.2rem;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff7e3;
+  text-decoration: none;
+  font-weight: 800;
+  border: 1px solid rgba(35, 70, 56, 0.16);
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.resource-button:hover {
+  transform: translateY(-1px);
+  background: #2b5644;
+}
+
+.secondary-resource-button {
+  background: transparent;
+  color: var(--green);
+  border-color: rgba(35, 70, 56, 0.16);
+}
+
+.secondary-resource-button:hover {
+  background: rgba(35, 70, 56, 0.05);
+}
+
+.resource-page-hero {
+  padding-bottom: 0;
+}
+
+.resources-shell {
+  padding-top: 0;
+}
+
 .surah-related {
   margin-top: 1.6rem;
   padding-top: 1rem;
@@ -722,6 +816,14 @@ body[data-theme="dark"] .surah-link-grid a {
   .layout-grid {
     grid-template-columns: 1fr;
   }
+
+  .study-resources .panel-heading {
+    display: grid;
+  }
+
+  .secondary-resource-button {
+    width: 100%;
+  }
 }
 
 @media (max-width: 700px) {
@@ -729,7 +831,8 @@ body[data-theme="dark"] .surah-link-grid a {
   .hero-meta,
   .page-input-row,
   .search-row,
-  .reader-option-row {
+  .reader-option-row,
+  .resource-highlight-grid {
     grid-template-columns: 1fr;
   }
 
@@ -750,6 +853,14 @@ body[data-theme="dark"] .surah-link-grid a {
 
   .site-footer {
     align-items: flex-start;
+  }
+
+  .resource-actions {
+    justify-content: stretch;
+  }
+
+  .resource-button {
+    width: 100%;
   }
 
   .word-tooltip {
