@@ -377,6 +377,30 @@ select {
   gap: 0.35rem;
 }
 
+.surah-sequence {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.surah-sequence a {
+  color: var(--green);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.surah-sequence a:last-child {
+  margin-left: auto;
+  text-align: right;
+}
+
+.surah-sequence a:hover {
+  color: var(--gold);
+}
+
 .surah-related {
   margin-top: 1.6rem;
   padding-top: 1rem;
