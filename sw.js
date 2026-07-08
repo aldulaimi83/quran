@@ -1,4 +1,4 @@
-const CACHE = "quran-v2";
+const CACHE = "quran-v3";
 const STATIC = [
   "/",
   "/index.html",
@@ -6,6 +6,10 @@ const STATIC = [
   "/script.js?v=20260510b",
   "/manifest.json",
   "/favicon.png",
+  "/resources.html",
+  "/about.html",
+  "/contact.html",
+  "/privacy.html",
 ];
 
 self.addEventListener("install", (e) => {

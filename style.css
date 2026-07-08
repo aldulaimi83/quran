@@ -233,6 +233,57 @@ select {
   border: 0;
 }
 
+.surah-index-link {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: rgba(35, 70, 56, 0.06);
+  color: var(--green);
+  text-decoration: none;
+  font-weight: 800;
+  border: 1px solid rgba(35, 70, 56, 0.12);
+}
+
+.surah-index-link:hover {
+  color: var(--gold);
+  border-color: rgba(173, 124, 42, 0.42);
+}
+
+.surah-study-links,
+.surah-faq {
+  margin-top: 1.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.surah-faq-grid {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.surah-faq-item {
+  padding: 1rem 1.05rem;
+  border-radius: 20px;
+  border: 1px solid rgba(35, 70, 56, 0.1);
+  background: linear-gradient(135deg, rgba(255,255,255,0.94), rgba(248,233,195,0.58));
+}
+
+.surah-faq-item h3 {
+  margin: 0 0 0.45rem;
+  font-family: "Syne", sans-serif;
+  color: var(--green);
+}
+
+.surah-faq-item p {
+  margin: 0;
+}
+
+.popular-surahs-section {
+  margin-top: 1rem;
+}
+
 .guide-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
