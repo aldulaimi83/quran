@@ -1,4 +1,4 @@
-const CACHE = "quran-v3";
+const CACHE = "quran-v4";
 const STATIC = [
   "/",
   "/index.html",
@@ -10,6 +10,7 @@ const STATIC = [
   "/about.html",
   "/contact.html",
   "/privacy.html",
+  "/sources.html",
 ];
 
 self.addEventListener("install", (e) => {
@@ -33,6 +34,21 @@ self.addEventListener("fetch", (e) => {
 
   // Always fetch Quran API live — never cache it
   if (url.hostname.includes("quran.com") || url.hostname.includes("qurancdn.com")) {
+    return;
+  }
+
+  // Prefer the deployed version for pages so editorial and policy updates do
+  // not remain hidden behind an old cache. Fall back to cache when offline.
+  if (e.request.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname === "/") {
+    e.respondWith(
+      fetch(e.request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(e.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(e.request).then((cached) => cached || new Response("Offline", { status: 503 })))
+    );
     return;
   }
 
